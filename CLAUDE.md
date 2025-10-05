@@ -47,12 +47,12 @@ Controlador-lavadora-nextion/
 │   ├── HardwareControl.cpp # Control hardware
 │   ├── SensorManager.cpp   # Gestión sensores
 │   └── NextionUI.cpp       # Protocolo Nextion
-├── lib/                    # Librerías locales (ya incluidas)
-│   ├── HX710B/             # Sensor de presión
-│   ├── DallasTemperature/  # Sensor DS18B20
-│   ├── OneWire/            # Protocolo OneWire
-│   ├── AsyncTaskLib/       # Tareas asíncronas (OBLIGATORIO USAR)
-│   └── Adafruit_BusIO/     # Dependencia I2C/SPI
+├── lib/                    # Librerías locales
+│   ├── HX710B/             # Sensor de presión (local - no está en registry)
+│   └── AsyncTaskLib/       # Tareas asíncronas (OBLIGATORIO USAR)
+│
+│ Nota: OneWire y DallasTemperature se instalan desde PlatformIO registry
+│       (versiones actualizadas y compatibles con ESP32 framework 2.0.16)
 └── docs/
     ├── Detalle-programas.md
     ├── config_structs.h
@@ -323,6 +323,18 @@ Desde VSCode:
 - Monitor: `Ctrl+Alt+S` (PlatformIO: Serial Monitor)
 
 ## 🐛 Solución de Problemas
+
+### Error de compilación con librerías
+
+**Configuración actual (compatible con ESP32 framework 2.0.16):**
+- Platform: **espressif32@6.7.0**
+- OneWire y DallasTemperature: **Desde PlatformIO registry** (actualizadas)
+- HX710B y AsyncTaskLib: **Locales en lib/** (no están en registry)
+- Ver [platformio.ini:21-23](platformio.ini#L21-23)
+
+**Si aparece error `esp32_gpioMux was not declared`:**
+- Las versiones locales de OneWire en `lib/` están deshabilitadas (`.bak`)
+- PlatformIO descargará automáticamente versiones compatibles
 
 ### Error: "HX710B.h not found"
 

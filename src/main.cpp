@@ -215,10 +215,10 @@ void loop() {
     updateUI();
 
     // Verificar emergencia
-    if (hardware.isEmergencyPressed()) {
-        stateMachine.emergencyStop();
-        nextion.showEmergency();
-    }
+    // if (hardware.isEmergencyPressed()) {
+    //     stateMachine.emergencyStop();
+    //     nextion.showEmergency();
+    // }
 
     // Sin delay() - el loop corre lo más rápido posible
 }
