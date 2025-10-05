@@ -322,6 +322,142 @@ Desde VSCode:
 - Cargar: `Ctrl+Alt+U` (PlatformIO: Upload)
 - Monitor: `Ctrl+Alt+S` (PlatformIO: Serial Monitor)
 
+## 🔍 Debugging
+
+### Logging Estructurado con esp_log
+
+El proyecto usa el sistema de logging nativo de ESP32 que respeta `CORE_DEBUG_LEVEL` en [platformio.ini](platformio.ini).
+
+**Niveles de log** (configurar en platformio.ini):
+```ini
+build_flags =
+    -D CORE_DEBUG_LEVEL=3  ; 0=None, 1=Error, 2=Warn, 3=Info, 4=Debug, 5=Verbose
+```
+
+**Uso en código** (ver [Debug.h](include/Debug.h)):
+```cpp
+#include "Debug.h"
+
+// En cualquier archivo .cpp
+log_v(TAG_SENSOR, "Mensaje muy detallado");    // Verbose
+log_d(TAG_SENSOR, "Info de debug");             // Debug
+log_i(TAG_SENSOR, "Información importante");    // Info
+log_w(TAG_SENSOR, "Advertencia");               // Warning
+log_e(TAG_SENSOR, "Error crítico");             // Error
+```
+
+**Tags disponibles:**
+- `TAG_MAIN` - Loop principal
+- `TAG_STATE` - Máquina de estados
+- `TAG_HARDWARE` - Control de hardware
+- `TAG_SENSOR` - Lectura de sensores
+- `TAG_NEXTION` - Comunicación Nextion
+
+**Macros útiles:**
+```cpp
+DEBUG_STATE_TRANSITION(from, to);
+DEBUG_SENSOR_READ("Temperatura", 25.5);
+DEBUG_HARDWARE_ACTION("Motor izquierda ON");
+DEBUG_NEXTION_EVENT(page, comp, type);
+```
+
+### Monitor Serial Mejorado
+
+El monitor serial tiene **filtros de color y timestamps**:
+```bash
+# Monitor con colores y timestamp
+pio device monitor
+
+# Desde VSCode: Ctrl+Alt+S
+```
+
+Salida ejemplo:
+```
+[00:05:23.456] I (1234) SENSOR: Temperatura = 25.30
+[00:05:23.512] D (1235) STATE: Transición: 2 -> 3
+[00:05:23.678] W (1240) HARDWARE: Nivel de agua bajo
+```
+
+### Unit Testing
+
+Ejecutar tests unitarios **sin hardware**:
+
+```bash
+# Correr todos los tests
+pio test
+
+# Correr test específico
+pio test -f test_state_machine
+
+# Correr tests en el ESP32 (requiere hardware)
+pio test --environment esp32dev
+```
+
+**Crear nuevos tests:**
+1. Crear archivo en `test/test_nombre.cpp`
+2. Usar framework Unity:
+```cpp
+#include <unity.h>
+
+void test_mi_funcion() {
+    TEST_ASSERT_EQUAL(expected, actual);
+    TEST_ASSERT_TRUE(condition);
+    TEST_ASSERT_FLOAT_WITHIN(delta, expected, actual);
+}
+
+void setup() {
+    UNITY_BEGIN();
+    RUN_TEST(test_mi_funcion);
+    UNITY_END();
+}
+
+void loop() {}
+```
+
+Ver ejemplo completo en [test/test_state_machine.cpp](test/test_state_machine.cpp)
+
+### Utilidades de Debug
+
+**Monitorear memoria:**
+```cpp
+#include "Debug.h"
+
+DebugUtils::printMemoryInfo();  // Muestra heap libre
+DebugUtils::printChipInfo();    // Info del ESP32
+```
+
+**Monitor de performance:**
+```cpp
+DebugUtils::LoopMonitor monitor;
+
+void setup() {
+    monitor.start();
+}
+
+void loop() {
+    monitor.update();  // Muestra stats cada 10 seg
+}
+```
+
+**Simulador de sensores** (testing sin hardware):
+```cpp
+#include "Debug.h"
+
+float temp = DebugUtils::SensorSimulator::getSimulatedTemperature();
+uint8_t level = DebugUtils::SensorSimulator::getSimulatedWaterLevel();
+```
+
+### Cambiar Nivel de Log en Runtime
+
+```cpp
+#include "Debug.h"
+
+void setup() {
+    // Cambiar nivel dinámicamente
+    DebugUtils::setLogLevel(ESP_LOG_DEBUG);  // Nivel 4
+}
+```
+
 ## 🐛 Solución de Problemas
 
 ### Error de compilación con librerías

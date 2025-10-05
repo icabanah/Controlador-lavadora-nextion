@@ -3,6 +3,7 @@
 SensorManager::SensorManager()
     : oneWire(HardwarePins::TEMPERATURE),
       tempSensor(&oneWire),
+      tempSensorFound(false), // Nuevo flag
       currentTemperature(0.0),
       temperatureValid(false),
       lastTempRead(0),
@@ -19,11 +20,22 @@ void SensorManager::begin() {
     tempSensor.begin();
     tempSensor.setResolution(SensorConfig::TEMP_RESOLUTION);
 
+    // Verificar si el sensor de temperatura está conectado
+    if (tempSensor.isConnected(SensorConfig::TEMP_SENSOR_ADDR)) {
+        tempSensorFound = true;
+        tempSensor.setResolution(SensorConfig::TEMP_RESOLUTION);
+        Serial.println("Sensor de temperatura DS18B20 encontrado.");
+    } else {
+        tempSensorFound = false;
+        Serial.println("ADVERTENCIA: Sensor de temperatura DS18B20 NO encontrado. Funcionando sin él.");
+    }
+
     // Inicializar sensor de presión
     pressureSensor.begin(HardwarePins::PRESSURE_DOUT, HardwarePins::PRESSURE_SCLK);
 
     // Primera lectura
     forceRead();
+    forceRead(); 
 }
 
 // ========================================
@@ -34,6 +46,7 @@ void SensorManager::update() {
     unsigned long now = millis();
 
     // Leer temperatura cada intervalo
+    // Leer temperatura cada intervalo, solo si existe el sensor
     if (now - lastTempRead >= Timing::SENSOR_READ_INTERVAL_MS) {
         readTemperature();
         lastTempRead = now;
@@ -83,6 +96,12 @@ bool SensorManager::isTemperatureTooLow(uint8_t targetTemp, uint8_t tolerance) c
 // ========================================
 
 void SensorManager::readTemperature() {
+    // No hacer nada si el sensor no fue encontrado en el arranque
+    if (!tempSensorFound) {
+        temperatureValid = false;
+        return;
+    }
+
     tempSensor.requestTemperatures();
     float temp = tempSensor.getTempC(SensorConfig::TEMP_SENSOR_ADDR);
 
