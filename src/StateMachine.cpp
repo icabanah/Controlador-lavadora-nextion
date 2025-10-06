@@ -395,6 +395,10 @@ bool StateMachine::isLastProcess() const {
 // ========================================
 
 unsigned long StateMachine::getPhaseElapsedTime() const {
+    // Si está pausado, devolver el tiempo guardado al pausar
+    if (currentState == STATE_PAUSED) {
+        return pausedPhaseElapsedTime;
+    }
     return millis() - phaseStartTime;
 }
 
