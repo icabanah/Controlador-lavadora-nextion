@@ -107,6 +107,14 @@ void updateEditDisplay() {
     nextion.setText("val_centrif", config.centrifugeEnabled[tanda] ? "Si" : "No");
     nextion.setText("val_agua", config.waterType[tanda] == WATER_HOT ? "Caliente" : "Fria");
 
+    // Deshabilitar botón de tipo de agua para P22 (caliente fijo) y P23 (fría fija)
+    if (config.programNumber == PROGRAM_22 || config.programNumber == PROGRAM_23) {
+        nextion.setEnabledById(NextionConfig::BTN_PANEL_AGUA, false);
+    } else {
+        // Habilitar para P24 (configurable)
+        nextion.setEnabledById(NextionConfig::BTN_PANEL_AGUA, true);
+    }
+
     // Actualizar botones de tanda (desactivar tandas no usadas en P22/P23)
     uint8_t totalTandas = config.totalProcesses;
 
@@ -510,6 +518,10 @@ void updateUI() {
         switch (state) {
             case STATE_WELCOME:
                 nextion.showWelcome();
+                // --- Personalizar textos de la página de bienvenida ---
+                nextion.setText("lbl_titulo", "Lavadora");
+                nextion.setText("lbl_subtitulo", "Modelo X-2000");
+                nextion.setText("lbl_contacto", "Soporte: itrebolsoft.com");
                 // Serial.println("UI: Mostrando página de bienvenida");
                 break;
 
