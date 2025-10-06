@@ -38,13 +38,14 @@ private:
     float currentTemperature;
     bool temperatureValid;
     unsigned long lastTempRead;
+    bool tempSensorFound;
+    bool tempConversionInProgress;  // Flag para lectura asíncrona
 
     // Sensor de presión/nivel
     HX710B pressureSensor;
     long currentPressure;
     uint8_t currentWaterLevel;
     unsigned long lastPressureRead;
-    bool tempSensorFound;
 
     // Métodos privados
     void readTemperature();

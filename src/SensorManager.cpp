@@ -3,10 +3,11 @@
 SensorManager::SensorManager()
     : oneWire(HardwarePins::TEMPERATURE),
       tempSensor(&oneWire),
-      tempSensorFound(false), // Nuevo flag
+      tempSensorFound(false),
       currentTemperature(0.0),
       temperatureValid(false),
       lastTempRead(0),
+      tempConversionInProgress(false),
       currentPressure(0),
       currentWaterLevel(0),
       lastPressureRead(0) {}
@@ -18,6 +19,9 @@ SensorManager::SensorManager()
 void SensorManager::begin() {
     // Inicializar sensor de temperatura
     tempSensor.begin();
+
+    // IMPORTANTE: Configurar para lecturas asíncronas (no bloqueantes)
+    tempSensor.setWaitForConversion(false);
 
     // Verificar si hay CUALQUIER dispositivo en el bus OneWire.
     // oneWire.search() no se bloquea si no hay nada conectado.
@@ -122,15 +126,26 @@ void SensorManager::readTemperature() {
         return;
     }
 
-    tempSensor.requestTemperatures();
-    float temp = tempSensor.getTempC(SensorConfig::TEMP_SENSOR_ADDR);
+    // Lectura ASÍNCRONA (no bloqueante) - igual que código anterior
+    if (tempConversionInProgress) {
+        // Verificar si la conversión terminó
+        if (tempSensor.isConversionComplete()) {
+            float temp = tempSensor.getTempC(SensorConfig::TEMP_SENSOR_ADDR);
+            tempConversionInProgress = false;
 
-    if (temp != DEVICE_DISCONNECTED_C && temp >= -55 && temp <= 125) {
-        currentTemperature = temp;
-        temperatureValid = true;
+            if (temp != DEVICE_DISCONNECTED_C && temp >= -55 && temp <= 125) {
+                currentTemperature = temp;
+                temperatureValid = true;
+            } else {
+                temperatureValid = false;
+                Serial.println("Error: Sensor de temperatura desconectado");
+            }
+        }
+        // Si no terminó, esperar al próximo ciclo
     } else {
-        temperatureValid = false;
-        Serial.println("Error: Sensor de temperatura desconectado");
+        // Iniciar nueva conversión
+        tempSensor.requestTemperatures();
+        tempConversionInProgress = true;
     }
 }
 
@@ -141,11 +156,10 @@ void SensorManager::readPressure() {
         currentPressure = (long)pressurePascal;
         currentWaterLevel = calculateWaterLevel(currentPressure);
 
-        // Debug: mostrar valor en pascales y nivel calculado
-        Serial.printf("[SENSOR] Presion: %.2f Pa → Nivel: %d\n",
-                      pressurePascal, currentWaterLevel);
+        // Debug deshabilitado (ralentiza el sistema)
+        // Serial.printf("[SENSOR] Presion: %.2f Pa → Nivel: %d\n",
+        //               pressurePascal, currentWaterLevel);
     }
-    // No imprimir advertencia: es normal que el sensor no esté listo a veces
 }
 
 uint8_t SensorManager::calculateWaterLevel(long pressure) {

@@ -212,35 +212,35 @@ void NextionUI::setButtonCallback(void (*callback)(uint8_t, uint8_t, uint8_t)) {
 void NextionUI::setText(const char* component, const char* text) {
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "%s.txt=\"%s\"", component, text);
-    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    // Serial.printf("[NEXTION] Enviando: %s\n", cmd);
     sendCommand(cmd);
 }
 
 void NextionUI::setNumber(const char* component, uint32_t value) {
     char cmd[64];
     snprintf(cmd, sizeof(cmd), "%s.val=%lu", component, value);
-    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    // Serial.printf("[NEXTION] Enviando: %s\n", cmd);
     sendCommand(cmd);
 }
 
 void NextionUI::setEnabled(const char* component, bool enabled) {
     char cmd[64];
     snprintf(cmd, sizeof(cmd), "%s.en=%d", component, enabled ? 1 : 0);
-    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    // Serial.printf("[NEXTION] Enviando: %s\n", cmd);
     sendCommand(cmd);
 }
 
 void NextionUI::setEnabledById(uint8_t componentId, bool enabled) {
     char cmd[64];
     snprintf(cmd, sizeof(cmd), "tsw %d,%d", componentId, enabled ? 1 : 0);
-    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    // Serial.printf("[NEXTION] Enviando: %s\n", cmd);
     sendCommand(cmd);
 }
 
 void NextionUI::setBackgroundColor(const char* component, uint16_t color) {
     char cmd[64];
     snprintf(cmd, sizeof(cmd), "%s.bco=%u", component, color);
-    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    // Serial.printf("[NEXTION] Enviando: %s\n", cmd);
     sendCommand(cmd);
 }
 

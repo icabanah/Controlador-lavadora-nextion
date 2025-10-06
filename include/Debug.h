@@ -67,20 +67,20 @@ namespace DebugUtils {
 
     // Mostrar estado de memoria
     inline void printMemoryInfo() {
-        log_i(TAG_MAIN, "=== MEMORIA ===");
-        log_i(TAG_MAIN, "Heap libre: %d bytes", ESP.getFreeHeap());
-        log_i(TAG_MAIN, "Heap mínimo: %d bytes", ESP.getMinFreeHeap());
-        log_i(TAG_MAIN, "Tamaño heap: %d bytes", ESP.getHeapSize());
+        Serial.println("=== MEMORIA ===");
+        Serial.printf("Heap libre: %d bytes\n", ESP.getFreeHeap());
+        Serial.printf("Heap mínimo: %d bytes\n", ESP.getMinFreeHeap());
+        Serial.printf("Tamaño heap: %d bytes\n", ESP.getHeapSize());
     }
 
     // Mostrar info del chip
     inline void printChipInfo() {
-        log_i(TAG_MAIN, "=== INFO ESP32 ===");
-        log_i(TAG_MAIN, "Modelo: %s", ESP.getChipModel());
-        log_i(TAG_MAIN, "Revisión: %d", ESP.getChipRevision());
-        log_i(TAG_MAIN, "Cores: %d", ESP.getChipCores());
-        log_i(TAG_MAIN, "Frecuencia: %d MHz", ESP.getCpuFreqMHz());
-        log_i(TAG_MAIN, "Flash: %d MB", ESP.getFlashChipSize() / 1024 / 1024);
+        Serial.println("=== INFO ESP32 ===");
+        Serial.printf("Modelo: %s\n", ESP.getChipModel());
+        Serial.printf("Revisión: %d\n", ESP.getChipRevision());
+        Serial.printf("Cores: %d\n", ESP.getChipCores());
+        Serial.printf("Frecuencia: %d MHz\n", ESP.getCpuFreqMHz());
+        Serial.printf("Flash: %d MB\n", ESP.getFlashChipSize() / 1024 / 1024);
     }
 
     // Monitor de performance del loop
@@ -105,10 +105,10 @@ namespace DebugUtils {
 
             // Mostrar estadísticas cada 10 segundos
             if (now - lastUpdate >= 10000) {
-                log_i(TAG_MAIN, "=== LOOP STATS ===");
-                log_i(TAG_MAIN, "Loops/seg: %lu", loopCount / 10);
-                log_i(TAG_MAIN, "Loop mín: %lu ms", minLoopTime);
-                log_i(TAG_MAIN, "Loop máx: %lu ms", maxLoopTime);
+                Serial.println("=== LOOP STATS ===");
+                Serial.printf("Loops/seg: %lu\n", loopCount / 10);
+                Serial.printf("Loop mín: %lu ms\n", minLoopTime);
+                Serial.printf("Loop máx: %lu ms\n", maxLoopTime);
 
                 lastUpdate = now;
                 loopCount = 0;
