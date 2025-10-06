@@ -437,9 +437,11 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
 
             // Botón Guardar (doble clic: primero guarda, segundo sale)
             case NextionConfig::BTN_SAVE:
+                Serial.println("[EDIT] ========== BOTÓN GUARDAR PRESIONADO ==========");
                 if (!editState.editingValue) {
                     // Primera vez: guardar configuración en memoria persistente
                     editState.editingValue = true;
+                    Serial.printf("[EDIT] Guardando programa %d...\n", config.programNumber);
                     storage.saveProgram(config.programNumber, config);
                     Serial.println("[EDIT] Configuración guardada en memoria");
                 } else {
@@ -569,6 +571,10 @@ void updateUI() {
 void setup() {
     // Inicializar Serial para debug
     Serial.begin(115200);
+
+    // Esperar a que se conecte el monitor serial (5 segundos)
+    delay(5000);
+
     Serial.println("\n\n========================================");
     Serial.println("Controlador de Lavadora - ESP32");
     Serial.println("========================================\n");
@@ -576,6 +582,7 @@ void setup() {
     // Inicializar almacenamiento persistente
     Serial.println("Inicializando almacenamiento...");
     storage.begin();
+    storage.debugPrintAll();  // Debug: mostrar qué hay en memoria
 
     // Inicializar módulos
     Serial.println("Inicializando hardware...");
@@ -590,6 +597,14 @@ void setup() {
 
     Serial.println("Inicializando máquina de estados...");
     stateMachine.begin();
+
+    // Cargar configuración guardada del programa por defecto (P22)
+    Serial.println("Cargando configuración guardada...");
+    if (storage.loadProgram(22, stateMachine.getConfig())) {
+        Serial.println("Configuración de P22 cargada desde memoria");
+    } else {
+        Serial.println("Usando configuración por defecto de P22");
+    }
 
     Serial.println("\nSistema iniciado correctamente.\n");
     Serial.println("Esperando 3 segundos para pasar a selección...");

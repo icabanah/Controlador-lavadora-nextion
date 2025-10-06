@@ -35,6 +35,9 @@ public:
     // Limpiar toda la memoria
     void clearAll();
 
+    // Debug: imprimir todas las claves guardadas
+    void debugPrintAll();
+
 private:
     Preferences preferences;
 

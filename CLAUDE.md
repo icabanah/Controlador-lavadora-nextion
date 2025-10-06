@@ -705,11 +705,35 @@ storage.saveProgram(config.programNumber, config);
 - `centrif` (bool): Centrifugado habilitado
 - `water` (uint8_t): Tipo de agua (0=Fría, 1=Caliente)
 
+**Inicialización al Cargar ([Storage.cpp:85-88](src/Storage.cpp)):**
+```cpp
+// Al cargar, se inicializan automáticamente:
+config.programNumber = programNumber;
+config.currentProcess = 0;
+config.currentPhase = PHASE_FILLING;
+```
+
+**Carga al Inicio ([main.cpp:594-600](src/main.cpp)):**
+```cpp
+// Después de stateMachine.begin(), cargar configuración guardada
+if (storage.loadProgram(22, stateMachine.getConfig())) {
+    Serial.println("Configuración de P22 cargada desde memoria");
+} else {
+    Serial.println("Usando configuración por defecto de P22");
+}
+```
+
 **Límites de Memoria:**
 - Preferences usa partición NVS del ESP32 (típicamente 20KB)
 - Cada programa ocupa ~40 bytes (3 programas × 4 procesos × 5 parámetros)
 - Espacio total usado: ~120 bytes
 - Amplio margen disponible para futuras expansiones
+
+**IMPORTANTE - Persistencia de Datos:**
+✅ Los valores editados se guardan en flash al presionar "Guardar" en página de edición
+✅ Al reiniciar el ESP32, se cargan automáticamente las configuraciones guardadas
+✅ Si no hay configuración guardada, se usan valores de fábrica
+✅ La configuración persiste incluso después de desconectar la alimentación
 
 ## 📝 TODOs Pendientes
 
