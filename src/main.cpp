@@ -285,7 +285,6 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
     if (pageId == NextionConfig::PAGE_SELECTION) {
         switch (componentId) {
             case NextionConfig::BTN_PROGRAM1:
-                stateMachine.selectProgram(PROGRAM_22);
                 // Cargar configuración guardada si existe
                 if (!storage.loadProgram(22, stateMachine.getConfig())) {
                     // Si no existe, usar valores por defecto
@@ -296,7 +295,6 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 break;
 
             case NextionConfig::BTN_PROGRAM2:
-                stateMachine.selectProgram(PROGRAM_23);
                 // Cargar configuración guardada si existe
                 if (!storage.loadProgram(23, stateMachine.getConfig())) {
                     stateMachine.getConfig().setDefaults(PROGRAM_23);
@@ -306,7 +304,6 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 break;
 
             case NextionConfig::BTN_PROGRAM3:
-                stateMachine.selectProgram(PROGRAM_24);
                 // Cargar configuración guardada si existe
                 if (!storage.loadProgram(24, stateMachine.getConfig())) {
                     stateMachine.getConfig().setDefaults(PROGRAM_24);
@@ -350,11 +347,11 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 stateMachine.stopProgram();
                 sensors.stopMonitoring();  // DESACTIVAR sensores al detener
 
-                // Seleccionar programa por defecto (P22)
-                stateMachine.selectProgram(PROGRAM_22);
+                // Cargar programa por defecto (P22) desde storage
                 if (!storage.loadProgram(22, stateMachine.getConfig())) {
                     stateMachine.getConfig().setDefaults(PROGRAM_22);
                 }
+                stateMachine.setState(STATE_SELECTION);
 
                 nextion.showSelection();
                 updateProgramButtons(22);  // Resaltar botón P22
@@ -537,11 +534,11 @@ void updateUI() {
                 Serial.println("UI: Programa completado");
                 sensors.stopMonitoring();  // DESACTIVAR sensores al completar
 
-                // Seleccionar programa por defecto (P22)
-                stateMachine.selectProgram(PROGRAM_22);
+                // Cargar programa por defecto (P22) desde storage
                 if (!storage.loadProgram(22, stateMachine.getConfig())) {
                     stateMachine.getConfig().setDefaults(PROGRAM_22);
                 }
+                stateMachine.setState(STATE_SELECTION);
 
                 nextion.showSelection();
                 updateProgramButtons(22);  // Resaltar botón P22
@@ -662,11 +659,33 @@ void loop() {
     // Actualizar interfaz de usuario
     updateUI();
 
-    // Verificar emergencia
-    // if (hardware.isEmergencyPressed()) {
-    //     stateMachine.emergencyStop();
-    //     nextion.showEmergency();
-    // }
+    // Verificar emergencia (activar/desactivar según estado del botón)
+    static bool wasEmergencyActive = false;
+    bool isEmergencyActive = hardware.isEmergencyPressed();
+
+    if (isEmergencyActive && !wasEmergencyActive) {
+        // Botón de emergencia PRESIONADO (flanco ascendente)
+        stateMachine.emergencyStop();
+        sensors.stopMonitoring();
+        nextion.showEmergency();
+        wasEmergencyActive = true;
+        Serial.println("[EMERGENCY] Botón de emergencia ACTIVADO");
+    }
+    else if (!isEmergencyActive && wasEmergencyActive) {
+        // Botón de emergencia SOLTADO (flanco descendente)
+        // Volver a página de selección y resetear sistema
+        // Cargar configuración guardada de P22 (NO llamar selectProgram antes)
+        if (!storage.loadProgram(22, stateMachine.getConfig())) {
+            // Solo si no hay configuración guardada, usar valores por defecto
+            stateMachine.getConfig().setDefaults(PROGRAM_22);
+        }
+        stateMachine.setState(STATE_SELECTION);
+        nextion.showSelection();
+        updateProgramButtons(22);
+        nextion.updateSelectionDisplay(stateMachine.getConfig());
+        wasEmergencyActive = false;
+        Serial.println("[EMERGENCY] Botón de emergencia DESACTIVADO - Sistema reseteado");
+    }
 
     // Sin delay() - el loop corre lo más rápido posible
 }

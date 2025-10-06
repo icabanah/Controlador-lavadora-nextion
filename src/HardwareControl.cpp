@@ -35,10 +35,9 @@ void HardwareControl::begin() {
 
 void HardwareControl::update() {
     // Verificar emergencia automáticamente
-    // NOTA: Comentado temporalmente - el botón de emergencia puede estar flotando
-    // if (isEmergencyPressed()) {
-    //     emergencyShutdown();
-    // }
+    if (isEmergencyPressed()) {
+        emergencyShutdown();
+    }
 }
 
 // ========================================
