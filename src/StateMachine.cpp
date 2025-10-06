@@ -406,7 +406,10 @@ unsigned long StateMachine::getPhaseRemainingTime() const {
     unsigned long elapsed = getPhaseElapsedTime();
     unsigned long targetTime = 0;
 
-    switch (currentState) {
+    // Si está pausado, usar el estado anterior para determinar el targetTime
+    SystemState stateToCheck = (currentState == STATE_PAUSED) ? previousState : currentState;
+
+    switch (stateToCheck) {
         case STATE_WASHING:
             // Tiempo de lavado configurado (en minutos)
             targetTime = config.time[config.currentProcess] * 60000UL;
