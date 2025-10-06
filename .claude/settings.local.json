@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/DANIELE/Documents/itrebolsoft/Proyectos-hardware/Washer-industrial-machine-controller/mainController_vSimplificado/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

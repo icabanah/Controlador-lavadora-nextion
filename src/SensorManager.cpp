@@ -37,8 +37,26 @@ void SensorManager::begin() {
     // Inicializar sensor de presión
     pressureSensor.begin(HardwarePins::PRESSURE_DOUT, HardwarePins::PRESSURE_SCLK);
 
+    // Calibrar sensor de presión (establecer offset)
+    Serial.println("Calibrando sensor de presión...");
+    if (pressureSensor.wait_ready_timeout(1000, 100)) {
+        pressureSensor.tare(10); // 10 lecturas para establecer offset
+        Serial.println("Sensor de presión calibrado correctamente.");
+    } else {
+        Serial.println("ADVERTENCIA: Timeout esperando sensor de presión.");
+    }
+
+    // Mostrar umbrales de calibración
+    Serial.println("\n=== Umbrales de presión configurados ===");
+    Serial.printf("Nivel 0: < %d (sin agua)\n", SensorConfig::PRESSURE_LEVEL_1);
+    Serial.printf("Nivel 1: %d - %d\n", SensorConfig::PRESSURE_LEVEL_1, SensorConfig::PRESSURE_LEVEL_2 - 1);
+    Serial.printf("Nivel 2: %d - %d\n", SensorConfig::PRESSURE_LEVEL_2, SensorConfig::PRESSURE_LEVEL_3 - 1);
+    Serial.printf("Nivel 3: %d - %d\n", SensorConfig::PRESSURE_LEVEL_3, SensorConfig::PRESSURE_LEVEL_4 - 1);
+    Serial.printf("Nivel 4: >= %d (lleno)\n", SensorConfig::PRESSURE_LEVEL_4);
+    Serial.println("========================================\n");
+
     // Primera lectura
-    forceRead(); 
+    forceRead();
 }
 
 // ========================================
@@ -118,25 +136,46 @@ void SensorManager::readTemperature() {
 
 void SensorManager::readPressure() {
     if (pressureSensor.is_ready()) {
-        long reading = pressureSensor.read();
-        currentPressure = reading;
+        // Leer solo con pascal() (como código anterior)
+        float pressurePascal = pressureSensor.pascal();
+        currentPressure = (long)pressurePascal;
         currentWaterLevel = calculateWaterLevel(currentPressure);
-    } else {
-        Serial.println("Advertencia: Sensor de presión no listo");
+
+        // Debug: mostrar valor en pascales y nivel calculado
+        Serial.printf("[SENSOR] Presion: %.2f Pa → Nivel: %d\n",
+                      pressurePascal, currentWaterLevel);
     }
+    // No imprimir advertencia: es normal que el sensor no esté listo a veces
 }
 
 uint8_t SensorManager::calculateWaterLevel(long pressure) {
-    // Determinar nivel según umbrales (ajustar estos valores según calibración)
-    if (pressure < SensorConfig::PRESSURE_LEVEL_1) {
+    // Implementación con interpolación lineal entre niveles (igual que código anterior)
+    float pressureFloat = (float)pressure;
+
+    if (pressureFloat < SensorConfig::PRESSURE_LEVEL_1) {
         return 0;  // Sin agua
-    } else if (pressure < SensorConfig::PRESSURE_LEVEL_2) {
-        return 1;
-    } else if (pressure < SensorConfig::PRESSURE_LEVEL_3) {
-        return 2;
-    } else if (pressure < SensorConfig::PRESSURE_LEVEL_4) {
-        return 3;
-    } else {
-        return 4;
     }
+
+    if (pressureFloat < SensorConfig::PRESSURE_LEVEL_2) {
+        float p = (pressureFloat - SensorConfig::PRESSURE_LEVEL_1) /
+                  (SensorConfig::PRESSURE_LEVEL_2 - SensorConfig::PRESSURE_LEVEL_1);
+        uint8_t level = (uint8_t)(1 + p);
+        return (level < 1) ? 1 : ((level > 2) ? 2 : level);  // Nivel 1-2 interpolado
+    }
+
+    if (pressureFloat < SensorConfig::PRESSURE_LEVEL_3) {
+        float p = (pressureFloat - SensorConfig::PRESSURE_LEVEL_2) /
+                  (SensorConfig::PRESSURE_LEVEL_3 - SensorConfig::PRESSURE_LEVEL_2);
+        uint8_t level = (uint8_t)(2 + p);
+        return (level < 2) ? 2 : ((level > 3) ? 3 : level);  // Nivel 2-3 interpolado
+    }
+
+    if (pressureFloat < SensorConfig::PRESSURE_LEVEL_4) {
+        float p = (pressureFloat - SensorConfig::PRESSURE_LEVEL_3) /
+                  (SensorConfig::PRESSURE_LEVEL_4 - SensorConfig::PRESSURE_LEVEL_3);
+        uint8_t level = (uint8_t)(3 + p);
+        return (level < 3) ? 3 : ((level > 4) ? 4 : level);  // Nivel 3-4 interpolado
+    }
+
+    return 4;  // Máximo nivel
 }
