@@ -26,7 +26,8 @@ Sistema de control para lavadora industrial con 3 programas configurables, usand
 
 ### Estados del Sistema
 
-- `INIT` → `WELCOME` → `SELECTION` → `FILLING` → `WASHING` → `DRAINING` → `SPINNING` → `COOLING` → `COMPLETED`
+- `INIT` → `WELCOME` → `SELECTION` → `FILLING` → `WASHING` → `DRAINING` → `SPINNING` → `RESTING` → `COOLING` → `COMPLETED`
+- **RESTING**: Tiempo de reposo entre tandas (solo P24, 10 segundos)
 - Estados especiales: `PAUSED`, `ERROR`, `EMERGENCY`
 
 ## 📁 Estructura de Archivos
@@ -64,20 +65,23 @@ Controlador-lavadora-nextion/
 ### Programa 22 - Agua Caliente
 
 - 5 fases: Llenado → Lavado → Drenaje → Centrifugado → Enfriamiento
-- Control de temperatura: ±2°C (drena y rellena para ajustar)
+- Usa agua caliente para el llenado
+- Temperatura solo informativa (no hay control activo)
 - 1 proceso único
 
 ### Programa 23 - Agua Fría
 
 - 5 fases iguales a P22
-- Sin control de temperatura (solo lectura)
+- Usa agua fría para el llenado
+- Temperatura solo informativa (no hay control activo)
 - 1 proceso único
 
 ### Programa 24 - Multiproceso
 
 - 4 procesos × 4 fases cada uno + enfriamiento final
 - Agua caliente o fría configurable por proceso
-- Control de temperatura si es agua caliente
+- Temperatura solo informativa (no hay control activo)
+- **Reposo entre tandas**: 10 segundos de espera entre cada proceso para permitir que el agua drene completamente y los motores se detengan por inercia
 
 ## 🔧 Hardware
 
@@ -193,8 +197,9 @@ printh 65 01 01 01
 **Control de Puerta:**
 - Se cierra (bloquea) **antes de iniciar** el programa (importante para evitar rebalse)
 - Permanece cerrada durante todas las fases, incluso en pausa
-- Se abre **solo al finalizar la fase de enfriamiento** o al presionar "Parar"
-- En Programa 24 (multiproceso): se abre solo al terminar el último proceso
+- Se abre **al inicio de la fase de enfriamiento** (demora 1 minuto en abrirse naturalmente, coincide con el tiempo de enfriamiento)
+- También se abre al presionar "Parar"
+- En Programa 24 (multiproceso): se abre solo al inicio del enfriamiento del último proceso
 
 ## 🚫 REGLAS IMPORTANTES DE CÓDIGO
 

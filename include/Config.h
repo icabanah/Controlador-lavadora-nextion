@@ -7,7 +7,8 @@
 // CONFIGURACIÓN DE PINES HARDWARE
 // ========================================
 
-namespace HardwarePins {
+namespace HardwarePins
+{
     // Entrada de emergencia
     constexpr uint8_t EMERGENCY_BUTTON = 15;
 
@@ -36,10 +37,11 @@ namespace HardwarePins {
 // CONFIGURACIÓN DE SENSORES
 // ========================================
 
-namespace SensorConfig {
+namespace SensorConfig
+{
     // Temperatura DS18B20
-    constexpr uint8_t TEMP_RESOLUTION = 9;  // 0.5°C precisión
-    constexpr uint8_t TEMP_TOLERANCE = 2;   // ±2°C rango de control
+    constexpr uint8_t TEMP_RESOLUTION = 9; // 0.5°C precisión
+    constexpr uint8_t TEMP_TOLERANCE = 2;  // ±2°C rango de control
     const uint8_t TEMP_SENSOR_ADDR[8] = {0x28, 0xFF, 0x64, 0x1E, 0x0C, 0x31, 0x18, 0x66};
     // const uint8_t TEMP_SENSOR_ADDR[8] = {0x28, 0xFF, 0x07, 0x03, 0x93, 0x16, 0x04, 0x7A};
 
@@ -49,20 +51,21 @@ namespace SensorConfig {
     // PASO 3: Llenar tanque a cada nivel y anotar valores (pascal - offset)
     // PASO 4: Actualizar PRESSURE_LEVEL_1 a PRESSURE_LEVEL_4
 
-    constexpr long PRESSURE_OFFSET = 565;  // Valor pascal() cuando tanque vacío (~565 Pa)
+    constexpr long PRESSURE_OFFSET = 565; // Valor pascal() cuando tanque vacío (~565 Pa)
 
     // Niveles de agua (valores después de restar offset)
-    constexpr uint16_t PRESSURE_LEVEL_1 = 36;    // 601 - 565 = ~36
-    constexpr uint16_t PRESSURE_LEVEL_2 = 63;    // 628 - 565 = ~63
-    constexpr uint16_t PRESSURE_LEVEL_3 = 80;    // 645 - 565 = ~80
-    constexpr uint16_t PRESSURE_LEVEL_4 = 98;    // 663 - 565 = ~98
+    constexpr uint16_t PRESSURE_LEVEL_1 = 36; // 601 - 565 = ~36
+    constexpr uint16_t PRESSURE_LEVEL_2 = 63; // 628 - 565 = ~63
+    constexpr uint16_t PRESSURE_LEVEL_3 = 80; // 645 - 565 = ~80
+    constexpr uint16_t PRESSURE_LEVEL_4 = 98; // 663 - 565 = ~98
 }
 
 // ========================================
 // LÍMITES DE PARÁMETROS
 // ========================================
 
-namespace Limits {
+namespace Limits
+{
     constexpr uint8_t MIN_WATER_LEVEL = 1;
     constexpr uint8_t MAX_WATER_LEVEL = 4;
 
@@ -77,27 +80,30 @@ namespace Limits {
 // TIEMPOS DEL SISTEMA
 // ========================================
 
-namespace Timing {
-    constexpr uint16_t WELCOME_SCREEN_MS = 3000;
-    constexpr uint16_t DRAIN_TIME_SEC = 45;
-    constexpr uint16_t COOLING_TIME_SEC = 60;
-    constexpr uint16_t CENTRIFUGE_TIME_SEC = 45;
+namespace Timing
+{
+    constexpr uint16_t WELCOME_SCREEN_MS = 3000;      // Tiempo de bienvenida
+    constexpr uint16_t DRAIN_TIME_SEC = 45;           // Tiempo de drenaje
+    constexpr uint16_t COOLING_TIME_SEC = 60;         // Tiempo de enfriamiento
+    constexpr uint16_t CENTRIFUGE_TIME_SEC = 45;      // Tiempo de centrifugado
+    constexpr uint16_t REST_BETWEEN_PROCESS_SEC = 10; // Tiempo de reposo entre tandas (P24)
 
-    constexpr uint16_t SENSOR_READ_INTERVAL_MS = 500;
-    constexpr uint16_t UI_UPDATE_INTERVAL_MS = 1000;
+    constexpr uint16_t SENSOR_READ_INTERVAL_MS = 500; // Intervalo de lectura de sensores
+    constexpr uint16_t UI_UPDATE_INTERVAL_MS = 1000;  // Intervalo de actualización de UI
 }
 
 // ========================================
 // CONFIGURACIÓN NEXTION
 // ========================================
 
-namespace NextionConfig {
+namespace NextionConfig
+{
     constexpr uint32_t BAUD_RATE = 115200;
 
     // Colores Nextion (RGB565)
-    constexpr uint16_t COLOR_ACTIVE = 1024;      // Color para botón activo/seleccionado
-    constexpr uint16_t COLOR_INACTIVE = 50712;   // Color para botón inactivo/no seleccionado
-    constexpr uint16_t COLOR_DISABLED = 33840;   // Color para botón deshabilitado
+    constexpr uint16_t COLOR_ACTIVE = 1024;    // Color para botón activo/seleccionado
+    constexpr uint16_t COLOR_INACTIVE = 50712; // Color para botón inactivo/no seleccionado
+    constexpr uint16_t COLOR_DISABLED = 33840; // Color para botón deshabilitado
 
     // Páginas
     constexpr uint8_t PAGE_WELCOME = 0;
@@ -142,13 +148,15 @@ namespace NextionConfig {
 // PROGRAMAS Y FASES
 // ========================================
 
-enum ProgramType {
-    PROGRAM_22 = 22,  // Agua caliente
-    PROGRAM_23 = 23,  // Agua fría
-    PROGRAM_24 = 24   // Multiproceso
+enum ProgramType
+{
+    PROGRAM_22 = 22, // Agua caliente
+    PROGRAM_23 = 23, // Agua fría
+    PROGRAM_24 = 24  // Multiproceso
 };
 
-enum PhaseType {
+enum PhaseType
+{
     PHASE_FILLING = 0,
     PHASE_WASHING = 1,
     PHASE_DRAINING = 2,
@@ -156,7 +164,8 @@ enum PhaseType {
     PHASE_COOLING = 4
 };
 
-enum WaterType {
+enum WaterType
+{
     WATER_COLD = 0,
     WATER_HOT = 1
 };

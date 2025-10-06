@@ -58,9 +58,7 @@ StateMachine::StateMachine()
       programStartTime(0),
       pauseStartTime(0),
       totalPausedTime(0),
-      pausedPhaseElapsedTime(0),
-      tempControlState(TEMP_IDLE),
-      tempControlStartTime(0) {}
+      pausedPhaseElapsedTime(0) {}
 
 // ========================================
 // Inicialización
@@ -85,6 +83,7 @@ void StateMachine::update() {
         case STATE_WASHING:     updateWashing();    break;
         case STATE_DRAINING:    updateDraining();   break;
         case STATE_SPINNING:    updateSpinning();   break;
+        case STATE_RESTING:     updateResting();    break;
         case STATE_COOLING:     updateCooling();    break;
         case STATE_PAUSED:      updatePaused();     break;
         case STATE_COMPLETED:   updateCompleted();  break;
@@ -221,64 +220,17 @@ void StateMachine::updateFilling() {
 
 void StateMachine::updateWashing() {
     uint8_t proc = config.currentProcess;
-    uint8_t targetTemp = config.temperature[proc];
 
     // Alternar dirección del motor automáticamente
     hardware.toggleMotorDirection();
 
-    // Control de temperatura (solo para agua caliente) - Máquina de sub-estados
-    if (config.waterType[proc] == WATER_HOT) {
-        switch (tempControlState) {
-            case TEMP_IDLE:
-                // Verificar si necesita ajuste de temperatura
-                if (sensors.isTemperatureTooHigh(targetTemp)) {
-                    hardware.openDrain();
-                    tempControlState = TEMP_DRAINING;
-                    tempControlStartTime = millis();
-                    Serial.println("Temp alta: drenando...");
-                } else if (sensors.isTemperatureTooLow(targetTemp)) {
-                    hardware.openDrain();
-                    tempControlState = TEMP_DRAINING;
-                    tempControlStartTime = millis();
-                    Serial.println("Temp baja: drenando...");
-                }
-                break;
-
-            case TEMP_DRAINING:
-                // Esperar 5 segundos drenando
-                if (millis() - tempControlStartTime >= 5000) {
-                    hardware.closeDrain();
-
-                    // Decidir qué agua agregar
-                    if (sensors.isTemperatureTooHigh(targetTemp)) {
-                        hardware.openColdWater();
-                        Serial.println("Rellenando con agua fría...");
-                    } else {
-                        hardware.openHotWater();
-                        Serial.println("Rellenando con agua caliente...");
-                    }
-
-                    tempControlState = TEMP_FILLING;
-                    tempControlStartTime = millis();
-                }
-                break;
-
-            case TEMP_FILLING:
-                // Esperar 3 segundos rellenando
-                if (millis() - tempControlStartTime >= 3000) {
-                    hardware.closeWaterValves();
-                    tempControlState = TEMP_IDLE;
-                    Serial.println("Ajuste de temperatura completado");
-                }
-                break;
-        }
-    }
+    // Temperatura es solo informativa (no hay control activo)
+    // P22: agua caliente, P23: agua fría, P24: configurable por proceso
 
     // Verificar tiempo de lavado
     if (getPhaseElapsedTime() >= config.time[proc] * 60000UL) {
         hardware.stopMotor();
         hardware.closeWaterValves();
-        tempControlState = TEMP_IDLE;  // Reset sub-estado
         nextPhase();
     }
 }
@@ -306,8 +258,9 @@ void StateMachine::updateSpinning() {
                 // Último proceso: ir a enfriamiento
                 nextPhase();  // PHASE_COOLING
             } else {
-                // No es el último: ir al siguiente proceso (sin enfriamiento)
-                nextProcess();
+                // No es el último: ir a reposo entre tandas (solo P24)
+                phaseStartTime = millis();
+                setState(STATE_RESTING);
             }
         }
     } else {
@@ -316,16 +269,28 @@ void StateMachine::updateSpinning() {
         if (isLastProcess()) {
             nextPhase();  // PHASE_COOLING
         } else {
-            nextProcess();
+            // No es el último: ir a reposo entre tandas (solo P24)
+            phaseStartTime = millis();
+            setState(STATE_RESTING);
         }
     }
 }
 
-void StateMachine::updateCooling() {
-    if (millis() - phaseStartTime >= Timing::COOLING_TIME_SEC * 1000UL) {
-        // Abrir puerta al finalizar el enfriamiento
-        hardware.unlockDoor();
+void StateMachine::updateResting() {
+    // Tiempo de reposo entre tandas (solo P24)
+    // Permite que el agua drene completamente y los motores se detengan por inercia
 
+    if (millis() - phaseStartTime >= Timing::REST_BETWEEN_PROCESS_SEC * 1000UL) {
+        // Reposo completado, ir al siguiente proceso
+        nextProcess();
+    }
+}
+
+void StateMachine::updateCooling() {
+    // La puerta se abre al inicio de la fase de enfriamiento
+    // (demora 1 minuto en abrirse naturalmente, coincide con el tiempo de enfriamiento)
+
+    if (millis() - phaseStartTime >= Timing::COOLING_TIME_SEC * 1000UL) {
         // El enfriamiento SOLO ocurre al final de todos los procesos
         setState(STATE_COMPLETED);
     }
@@ -366,6 +331,8 @@ void StateMachine::nextPhase() {
             setState(STATE_SPINNING);
             break;
         case PHASE_COOLING:
+            // Abrir puerta al inicio de la fase de enfriamiento
+            hardware.unlockDoor();
             setState(STATE_COOLING);
             break;
         default:
@@ -427,6 +394,11 @@ unsigned long StateMachine::getPhaseRemainingTime() const {
             }
             break;
 
+        case STATE_RESTING:
+            // Tiempo de reposo entre tandas
+            targetTime = Timing::REST_BETWEEN_PROCESS_SEC * 1000UL;
+            break;
+
         case STATE_COOLING:
             // Tiempo de enfriamiento fijo
             targetTime = Timing::COOLING_TIME_SEC * 1000UL;
@@ -450,6 +422,7 @@ bool StateMachine::isTimerActive() const {
     return currentState == STATE_WASHING ||
            currentState == STATE_DRAINING ||
            currentState == STATE_SPINNING ||
+           currentState == STATE_RESTING ||
            currentState == STATE_COOLING;
 }
 

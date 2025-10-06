@@ -536,6 +536,7 @@ void updateUI() {
             case STATE_WASHING:
             case STATE_DRAINING:
             case STATE_SPINNING:
+            case STATE_RESTING:
             case STATE_COOLING:
                 nextion.showExecution();
                 // Serial.println("UI: Mostrando página de ejecución");
@@ -585,6 +586,7 @@ void updateUI() {
     lastUIUpdate = now;
 
     // Actualizar página de ejecución si estamos en proceso o pausado
+    // Nota: STATE_RESTING está entre STATE_SPINNING y STATE_COOLING por el orden del enum
     if ((state >= STATE_FILLING && state <= STATE_COOLING) || state == STATE_PAUSED) {
         // Mostrar tiempo restante si está en fase de lavado o pausado, sino 0
         uint16_t phaseTime = (stateMachine.isTimerActive() || state == STATE_PAUSED)

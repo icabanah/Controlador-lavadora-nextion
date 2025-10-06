@@ -13,6 +13,7 @@ enum SystemState {
     STATE_WASHING,
     STATE_DRAINING,
     STATE_SPINNING,
+    STATE_RESTING,      // Reposo entre tandas (solo P24)
     STATE_COOLING,
     STATE_PAUSED,
     STATE_COMPLETED,
@@ -80,15 +81,6 @@ private:
     unsigned long totalPausedTime;
     unsigned long pausedPhaseElapsedTime;  // Tiempo transcurrido de la fase al pausar
 
-    // Sub-estado para control de temperatura
-    enum TempControlState {
-        TEMP_IDLE,
-        TEMP_DRAINING,
-        TEMP_FILLING
-    };
-    TempControlState tempControlState;
-    unsigned long tempControlStartTime;
-
     // Métodos de actualización por estado
     void updateInit();
     void updateWelcome();
@@ -97,6 +89,7 @@ private:
     void updateWashing();
     void updateDraining();
     void updateSpinning();
+    void updateResting();
     void updateCooling();
     void updatePaused();
     void updateCompleted();
