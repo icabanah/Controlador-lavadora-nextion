@@ -164,9 +164,11 @@ printh 65 01 01 01
 
 **Temporizador:**
 - `tiempo_ejec`: Muestra tiempo **restante** (cuenta regresiva)
-  - **Solo comienza** cuando se alcanza el nivel de agua seteado (fase de lavado)
-  - Durante fase de lavado: muestra cuenta regresiva del tiempo configurado
-  - En otras fases (llenado, drenaje, centrifugado, enfriamiento): muestra 0
+  - **Fase de llenado**: muestra 0 (depende del sensor de nivel)
+  - **Fase de lavado**: muestra cuenta regresiva del tiempo configurado (ej: 15:00 → 0:00)
+  - **Fase de drenaje**: muestra cuenta regresiva de 45 segundos
+  - **Fase de centrifugado**: muestra cuenta regresiva de 45 segundos (si está habilitado)
+  - **Fase de enfriamiento**: muestra cuenta regresiva de 60 segundos
 - `tiempo_total`: Muestra tiempo **total del programa** (valor fijo)
   - Es la suma de los tiempos de lavado configurados (solo lavado, no incluye llenado/drenaje/centrifugado/enfriamiento)
   - No varía durante la ejecución del programa

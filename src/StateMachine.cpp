@@ -374,14 +374,37 @@ unsigned long StateMachine::getPhaseElapsedTime() const {
 }
 
 unsigned long StateMachine::getPhaseRemainingTime() const {
-    // Solo en fase de lavado se cuenta el tiempo
-    if (currentState != STATE_WASHING) {
-        return 0;
-    }
-
-    uint8_t proc = config.currentProcess;
-    unsigned long targetTime = config.time[proc] * 60000UL;  // Convertir minutos a ms
     unsigned long elapsed = getPhaseElapsedTime();
+    unsigned long targetTime = 0;
+
+    switch (currentState) {
+        case STATE_WASHING:
+            // Tiempo de lavado configurado (en minutos)
+            targetTime = config.time[config.currentProcess] * 60000UL;
+            break;
+
+        case STATE_DRAINING:
+            // Tiempo de drenaje fijo
+            targetTime = Timing::DRAIN_TIME_SEC * 1000UL;
+            break;
+
+        case STATE_SPINNING:
+            // Tiempo de centrifugado fijo (solo si está habilitado)
+            if (config.centrifugeEnabled[config.currentProcess]) {
+                targetTime = Timing::CENTRIFUGE_TIME_SEC * 1000UL;
+            }
+            break;
+
+        case STATE_COOLING:
+            // Tiempo de enfriamiento fijo
+            targetTime = Timing::COOLING_TIME_SEC * 1000UL;
+            break;
+
+        case STATE_FILLING:
+        default:
+            // Fase de llenado no tiene tiempo definido (depende del sensor)
+            return 0;
+    }
 
     if (elapsed >= targetTime) {
         return 0;
@@ -391,7 +414,11 @@ unsigned long StateMachine::getPhaseRemainingTime() const {
 }
 
 bool StateMachine::isTimerActive() const {
-    return currentState == STATE_WASHING;
+    // El timer está activo en todas las fases excepto llenado
+    return currentState == STATE_WASHING ||
+           currentState == STATE_DRAINING ||
+           currentState == STATE_SPINNING ||
+           currentState == STATE_COOLING;
 }
 
 uint16_t StateMachine::getTotalProgramTime() const {
