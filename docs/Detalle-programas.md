@@ -169,6 +169,14 @@ IDs de componentes de control
 - NEXTION_ID_BTN_TANDA3 28          // ID de Botón "tanda3" (proceso3)
 - NEXTION_ID_BTN_TANDA4 29          // ID de Botón "tanda4" (proceso4)
 
+Componentes del panel derecho
+
+- NEXTION_COMP_PARAM_NIVEL_EDIT "val_nivel"     // Componente botón que muestra valor actual del nivel en panel derecho
+- NEXTION_COMP_PARAM_TEMP_EDIT "val_temp"       // Componente botón que muestra valor actual de temperatura en panel derecho
+- NEXTION_COMP_PARAM_TIEMPO_EDIT "val_tiempo"   // Componente botón que muestra valor actual del tiempo en panel derecho
+- NEXTION_COMP_PARAM_CENTRIF_EDIT "val_centrif" // Componente botón que muestra valor actual de centrifugado en panel derecho
+- NEXTION_COMP_PARAM_AGUA_EDIT "val_agua"       // Componente botón que muestra valor actual de tipo de agua en panel derecho
+
 IDs de componentes de panel derecho
 
 - NEXTION_ID_PARAM_NIVEL_EDIT 18    // ID de botón que muestra configuración actual del nivel en panel derecho

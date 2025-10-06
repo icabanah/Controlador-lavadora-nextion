@@ -115,6 +115,13 @@ namespace NextionConfig {
     constexpr uint8_t BTN_PROCESS2 = 27;
     constexpr uint8_t BTN_PROCESS3 = 28;
     constexpr uint8_t BTN_PROCESS4 = 29;
+
+    // IDs de botones del panel derecho (página edición)
+    constexpr uint8_t BTN_PANEL_NIVEL = 18;
+    constexpr uint8_t BTN_PANEL_TEMP = 19;
+    constexpr uint8_t BTN_PANEL_TIEMPO = 20;
+    constexpr uint8_t BTN_PANEL_CENTRIF = 23;
+    constexpr uint8_t BTN_PANEL_AGUA = 24;
 }
 
 // ========================================

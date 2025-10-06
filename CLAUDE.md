@@ -493,9 +493,58 @@ void setup() {
 - Verificar `HardwareControl::toggleMotorDirection()` se llama en loop
 - Ajustar `MOTOR_TOGGLE_INTERVAL_MS` en [HardwareControl.h](include/HardwareControl.h)
 
+## 🎛️ Página de Edición
+
+### Funcionalidad Implementada
+
+La página de edición permite modificar parámetros de cada proceso/tanda:
+
+**Selección de Tanda:**
+- P22/P23: Solo tanda1 disponible (tandas 2-4 deshabilitadas)
+- P24: 4 tandas disponibles
+
+**Parámetros Editables:**
+- Nivel de agua (1-4)
+- Temperatura (°C)
+- Tiempo (minutos)
+- Centrifugado (Sí/No)
+- Tipo de agua (Caliente/Fría)
+
+**Navegación:**
+1. Seleccionar tanda con botones `tanda1`-`tanda4`
+2. Seleccionar parámetro presionando botón del panel derecho (`val_nivel`, `val_temp`, etc.)
+3. Modificar valor con botones `+` / `-`
+4. Guardar: Primera pulsación guarda, segunda vuelve a selección
+5. Cancelar: Descarta cambios y vuelve a selección
+
+**Implementación en [main.cpp:28-177](src/main.cpp):**
+
+```cpp
+// Estructura de estado de edición
+struct EditState {
+    uint8_t currentTanda;        // 0-3
+    ParameterType currentParam;  // Parámetro seleccionado
+    bool editingValue;           // Flag de guardado
+    ProgramConfig backupConfig;  // Backup para cancelar
+} editState;
+
+// Funciones principales
+void enterEditMode()          // Inicializa modo edición con backup
+void updateEditDisplay()      // Actualiza todos los componentes Nextion
+void incrementCurrentParameter()  // Incrementa parámetro actual
+void decrementCurrentParameter()  // Decrementa parámetro actual
+```
+
+**IDs de Componentes del Panel ([Config.h:119-124](include/Config.h)):**
+- `BTN_PANEL_NIVEL = 18`
+- `BTN_PANEL_TEMP = 19`
+- `BTN_PANEL_TIEMPO = 20`
+- `BTN_PANEL_CENTRIF = 23`
+- `BTN_PANEL_AGUA = 24`
+
 ## 📝 TODOs Pendientes
 
-- [ ] Implementar navegación completa en página de edición ([main.cpp:104-111](src/main.cpp))
+- [x] Implementar navegación completa en página de edición
 - [ ] Guardar configuraciones en EEPROM/NVS
 - [ ] Agregar watchdog timer para emergencias
 - [ ] Crear archivo .HMI para Nextion Editor

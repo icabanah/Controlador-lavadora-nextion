@@ -22,6 +22,161 @@ unsigned long lastUIUpdate = 0;
 SystemState lastDisplayedState = STATE_INIT;
 
 // ========================================
+// VARIABLES DE EDICIÓN
+// ========================================
+
+enum ParameterType {
+    PARAM_NIVEL,
+    PARAM_TEMP,
+    PARAM_TIEMPO,
+    PARAM_CENTRIF,
+    PARAM_AGUA
+};
+
+struct EditState {
+    uint8_t currentTanda;        // 0-3
+    ParameterType currentParam;  // Parámetro seleccionado
+    bool editingValue;           // true = editando valor, false = seleccionando parámetro
+    ProgramConfig backupConfig;  // Backup para cancelar
+} editState;
+
+// ========================================
+// FUNCIONES DE EDICIÓN
+// ========================================
+
+void enterEditMode() {
+    ProgramConfig& config = stateMachine.getConfig();
+
+    // Guardar backup
+    editState.backupConfig = config;
+    editState.currentTanda = 0;
+    editState.currentParam = PARAM_NIVEL;
+    editState.editingValue = false;
+
+    Serial.println("=== Entrando a modo edición ===");
+}
+
+void updateEditDisplay() {
+    ProgramConfig& config = stateMachine.getConfig();
+    uint8_t tanda = editState.currentTanda;
+
+    // Actualizar valores del panel derecho
+    char buffer[32];
+
+    snprintf(buffer, sizeof(buffer), "%d", config.waterLevel[tanda]);
+    nextion.setText("val_nivel", buffer);
+
+    snprintf(buffer, sizeof(buffer), "%d", config.temperature[tanda]);
+    nextion.setText("val_temp", buffer);
+
+    snprintf(buffer, sizeof(buffer), "%d", config.time[tanda]);
+    nextion.setText("val_tiempo", buffer);
+
+    nextion.setText("val_centrif", config.centrifugeEnabled[tanda] ? "Si" : "No");
+    nextion.setText("val_agua", config.waterType[tanda] == WATER_HOT ? "Caliente" : "Fria");
+
+    // Actualizar botones de tanda (desactivar tandas no usadas en P22/P23)
+    uint8_t totalTandas = config.totalProcesses;
+    for (int i = 0; i < 4; i++) {
+        char tandaName[16];
+        snprintf(tandaName, sizeof(tandaName), "tanda%d", i + 1);
+
+        if (i < totalTandas) {
+            // Activa: resaltar si es la seleccionada
+            nextion.setNumber(tandaName, (i == tanda) ? 1 : 0);
+        } else {
+            // Inactiva: valor -1 o deshabilitada
+            nextion.setNumber(tandaName, 2);  // Estado "deshabilitado"
+        }
+    }
+
+    // Mostrar parámetro actual en edición
+    const char* paramName = "";
+    char paramValue[32] = "";
+
+    switch (editState.currentParam) {
+        case PARAM_NIVEL:
+            paramName = "Nivel de Agua";
+            snprintf(paramValue, sizeof(paramValue), "%d", config.waterLevel[tanda]);
+            break;
+        case PARAM_TEMP:
+            paramName = "Temperatura";
+            snprintf(paramValue, sizeof(paramValue), "%d°C", config.temperature[tanda]);
+            break;
+        case PARAM_TIEMPO:
+            paramName = "Tiempo";
+            snprintf(paramValue, sizeof(paramValue), "%d min", config.time[tanda]);
+            break;
+        case PARAM_CENTRIF:
+            paramName = "Centrifugado";
+            snprintf(paramValue, sizeof(paramValue), "%s", config.centrifugeEnabled[tanda] ? "Si" : "No");
+            break;
+        case PARAM_AGUA:
+            paramName = "Tipo de Agua";
+            snprintf(paramValue, sizeof(paramValue), "%s", config.waterType[tanda] == WATER_HOT ? "Caliente" : "Fria");
+            break;
+    }
+
+    nextion.updateEditDisplay(tanda, paramName, paramValue);
+}
+
+void incrementCurrentParameter() {
+    ProgramConfig& config = stateMachine.getConfig();
+    uint8_t tanda = editState.currentTanda;
+
+    switch (editState.currentParam) {
+        case PARAM_NIVEL:
+            if (config.waterLevel[tanda] < Limits::MAX_WATER_LEVEL)
+                config.waterLevel[tanda]++;
+            break;
+        case PARAM_TEMP:
+            if (config.temperature[tanda] < Limits::MAX_TEMPERATURE)
+                config.temperature[tanda]++;
+            break;
+        case PARAM_TIEMPO:
+            if (config.time[tanda] < Limits::MAX_TIME)
+                config.time[tanda]++;
+            break;
+        case PARAM_CENTRIF:
+            config.centrifugeEnabled[tanda] = !config.centrifugeEnabled[tanda];
+            break;
+        case PARAM_AGUA:
+            config.waterType[tanda] = (config.waterType[tanda] == WATER_HOT) ? WATER_COLD : WATER_HOT;
+            break;
+    }
+
+    updateEditDisplay();
+}
+
+void decrementCurrentParameter() {
+    ProgramConfig& config = stateMachine.getConfig();
+    uint8_t tanda = editState.currentTanda;
+
+    switch (editState.currentParam) {
+        case PARAM_NIVEL:
+            if (config.waterLevel[tanda] > Limits::MIN_WATER_LEVEL)
+                config.waterLevel[tanda]--;
+            break;
+        case PARAM_TEMP:
+            if (config.temperature[tanda] > Limits::MIN_TEMPERATURE)
+                config.temperature[tanda]--;
+            break;
+        case PARAM_TIEMPO:
+            if (config.time[tanda] > Limits::MIN_TIME)
+                config.time[tanda]--;
+            break;
+        case PARAM_CENTRIF:
+            config.centrifugeEnabled[tanda] = !config.centrifugeEnabled[tanda];
+            break;
+        case PARAM_AGUA:
+            config.waterType[tanda] = (config.waterType[tanda] == WATER_HOT) ? WATER_COLD : WATER_HOT;
+            break;
+    }
+
+    updateEditDisplay();
+}
+
+// ========================================
 // CALLBACK DE EVENTOS NEXTION
 // ========================================
 
@@ -57,7 +212,9 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 break;
 
             case NextionConfig::BTN_EDIT:
+                enterEditMode();
                 nextion.showEdit();
+                updateEditDisplay();
                 break;
         }
     }
@@ -83,44 +240,94 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
     // Página de edición
     else if (pageId == NextionConfig::PAGE_EDIT) {
         ProgramConfig& config = stateMachine.getConfig();
-        uint8_t proc = config.currentProcess;
 
         switch (componentId) {
+            // Botones de selección de tanda
             case NextionConfig::BTN_PROCESS1:
-                config.currentProcess = 0;
+                editState.currentTanda = 0;
+                updateEditDisplay();
                 break;
 
             case NextionConfig::BTN_PROCESS2:
-                config.currentProcess = 1;
+                if (config.totalProcesses > 1) {
+                    editState.currentTanda = 1;
+                    updateEditDisplay();
+                }
                 break;
 
             case NextionConfig::BTN_PROCESS3:
-                config.currentProcess = 2;
+                if (config.totalProcesses > 2) {
+                    editState.currentTanda = 2;
+                    updateEditDisplay();
+                }
                 break;
 
             case NextionConfig::BTN_PROCESS4:
-                config.currentProcess = 3;
+                if (config.totalProcesses > 3) {
+                    editState.currentTanda = 3;
+                    updateEditDisplay();
+                }
                 break;
 
+            // Botones del panel derecho (selección de parámetro)
+            case NextionConfig::BTN_PANEL_NIVEL:
+                editState.currentParam = PARAM_NIVEL;
+                updateEditDisplay();
+                break;
+
+            case NextionConfig::BTN_PANEL_TEMP:
+                editState.currentParam = PARAM_TEMP;
+                updateEditDisplay();
+                break;
+
+            case NextionConfig::BTN_PANEL_TIEMPO:
+                editState.currentParam = PARAM_TIEMPO;
+                updateEditDisplay();
+                break;
+
+            case NextionConfig::BTN_PANEL_CENTRIF:
+                editState.currentParam = PARAM_CENTRIF;
+                updateEditDisplay();
+                break;
+
+            case NextionConfig::BTN_PANEL_AGUA:
+                editState.currentParam = PARAM_AGUA;
+                updateEditDisplay();
+                break;
+
+            // Botones de incremento/decremento
             case NextionConfig::BTN_PARAM_PLUS:
-                // Incrementar parámetro actual
-                // TODO: Implementar navegación de parámetros
+                incrementCurrentParameter();
                 break;
 
             case NextionConfig::BTN_PARAM_MINUS:
-                // Decrementar parámetro actual
-                // TODO: Implementar navegación de parámetros
+                decrementCurrentParameter();
                 break;
 
+            // Botón Guardar (doble clic: primero guarda, segundo sale)
             case NextionConfig::BTN_SAVE:
-                // Guardar cambios y volver a selección
+                if (!editState.editingValue) {
+                    // Primera vez: guardar configuración
+                    editState.editingValue = true;
+                    Serial.println("[EDIT] Configuración guardada");
+                } else {
+                    // Segunda vez: salir a página de selección
+                    editState.editingValue = false;
+                    stateMachine.setState(STATE_SELECTION);
+                    nextion.showSelection();
+                    nextion.updateSelectionDisplay(config);
+                    Serial.println("[EDIT] Volviendo a página de selección");
+                }
+                break;
+
+            // Botón Cancelar (restaura backup y vuelve)
+            case NextionConfig::BTN_CANCEL:
+                config = editState.backupConfig;
+                editState.editingValue = false;
+                stateMachine.setState(STATE_SELECTION);
                 nextion.showSelection();
                 nextion.updateSelectionDisplay(config);
-                break;
-
-            case NextionConfig::BTN_CANCEL:
-                // Cancelar y volver a selección
-                nextion.showSelection();
+                Serial.println("[EDIT] Cambios cancelados");
                 break;
         }
     }
