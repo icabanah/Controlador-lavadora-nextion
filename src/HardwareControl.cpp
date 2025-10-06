@@ -73,12 +73,14 @@ void HardwareControl::closeWaterValves() {
 }
 
 void HardwareControl::openDrain() {
-    digitalWrite(HardwarePins::DRAIN_VALVE, HIGH);
+    // LOW = Válvula desconectada = Drenaje ABIERTO (sale agua)
+    digitalWrite(HardwarePins::DRAIN_VALVE, LOW);
     drainOpen = true;
 }
 
 void HardwareControl::closeDrain() {
-    digitalWrite(HardwarePins::DRAIN_VALVE, LOW);
+    // HIGH = Válvula energizada = Drenaje CERRADO (retiene agua)
+    digitalWrite(HardwarePins::DRAIN_VALVE, HIGH);
     drainOpen = false;
 }
 
@@ -229,6 +231,6 @@ void HardwareControl::emergencyShutdown() {
 
 void HardwareControl::resetAll() {
     emergencyShutdown();
-    // Mantener drenaje ABIERTO al iniciar (para vaciar cualquier agua residual)
-    // closeDrain(); - Comentado para dejar el drenaje abierto al inicio
+    // emergencyShutdown() ya abre el drenaje (LOW)
+    // Esto permite vaciar cualquier agua residual al iniciar
 }
