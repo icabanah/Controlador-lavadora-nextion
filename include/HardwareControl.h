@@ -55,8 +55,15 @@ private:
     };
     MotorState motorState;
 
-    // Configuración de alternancia del motor
+    // Antirrebote para botón de emergencia
+    bool emergencyButtonState;           // Estado actual del botón (después de debounce)
+    bool lastEmergencyButtonRead;        // Última lectura del pin
+    unsigned long lastEmergencyDebounceTime;  // Tiempo de última transición
+    bool emergencyTriggered;             // Flag de emergencia ya activada
+
+    // Configuración de tiempos
     static constexpr uint16_t MOTOR_TOGGLE_INTERVAL_MS = 5000;  // Cambia cada 5 segundos
+    static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 100;        // Tiempo de antirrebote (100ms)
 };
 
 #endif // HARDWARE_CONTROL_H

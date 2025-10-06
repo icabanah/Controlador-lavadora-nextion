@@ -6,7 +6,11 @@ HardwareControl::HardwareControl()
       motorRunning(false),
       centrifugeActive(false),
       lastMotorToggle(0),
-      motorState(MOTOR_RIGHT_ACTIVE) {}
+      motorState(MOTOR_RIGHT_ACTIVE),
+      emergencyButtonState(HIGH),      // Botón no presionado (pull-up)
+      lastEmergencyButtonRead(HIGH),
+      lastEmergencyDebounceTime(0),
+      emergencyTriggered(false) {}
 
 // ========================================
 // Inicialización
@@ -34,9 +38,16 @@ void HardwareControl::begin() {
 // ========================================
 
 void HardwareControl::update() {
-    // Verificar emergencia automáticamente
+    // Verificar emergencia con antirrebote
     if (isEmergencyPressed()) {
-        emergencyShutdown();
+        if (!emergencyTriggered) {
+            emergencyTriggered = true;
+            emergencyShutdown();
+            Serial.println("[HARDWARE] ¡EMERGENCIA ACTIVADA!");
+        }
+    } else {
+        // Resetear flag cuando se suelta el botón (permite reactivar emergencia)
+        emergencyTriggered = false;
     }
 }
 
@@ -178,12 +189,30 @@ void HardwareControl::unlockDoor() {
 }
 
 // ========================================
-// Botón de emergencia
+// Botón de emergencia (con antirrebote)
 // ========================================
 
 bool HardwareControl::isEmergencyPressed() {
-    // Botón con pull-up, activo en LOW
-    return digitalRead(HardwarePins::EMERGENCY_BUTTON) == LOW;
+    // Leer estado actual del pin (botón con pull-up, activo en LOW)
+    bool currentRead = digitalRead(HardwarePins::EMERGENCY_BUTTON);
+
+    // Si la lectura cambió desde la última vez
+    if (currentRead != lastEmergencyButtonRead) {
+        // Reiniciar el temporizador de antirrebote
+        lastEmergencyDebounceTime = millis();
+        lastEmergencyButtonRead = currentRead;
+    }
+
+    // Si han pasado más de EMERGENCY_DEBOUNCE_MS desde el último cambio
+    if ((millis() - lastEmergencyDebounceTime) > EMERGENCY_DEBOUNCE_MS) {
+        // El estado es estable, actualizar el estado del botón
+        if (currentRead != emergencyButtonState) {
+            emergencyButtonState = currentRead;
+        }
+    }
+
+    // Retornar true si el botón está presionado (LOW = presionado con pull-up)
+    return emergencyButtonState == LOW;
 }
 
 // ========================================

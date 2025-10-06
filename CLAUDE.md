@@ -529,6 +529,85 @@ void setup() {
 - Verificar `HardwareControl::toggleMotorDirection()` se llama en loop
 - Ajustar `MOTOR_TOGGLE_INTERVAL_MS` en [HardwareControl.h](include/HardwareControl.h)
 
+### Botón de emergencia con rebotes
+
+- El sistema implementa **antirrebote (debounce) de 50ms**
+- Evita falsas activaciones por ruido eléctrico o contactos defectuosos
+- Solo activa emergencia una vez por pulsación (no múltiples veces)
+
+## 🚨 Sistema Antirrebote del Botón de Emergencia
+
+### Implementación
+
+El botón de emergencia usa un **algoritmo de debounce** para evitar falsos contactos:
+
+**Parámetros ([HardwareControl.h:66](include/HardwareControl.h)):**
+```cpp
+static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 50;  // Tiempo de antirrebote
+```
+
+**Funcionamiento ([HardwareControl.cpp:195-216](src/HardwareControl.cpp)):**
+
+1. **Lectura continua**: Se lee el pin en cada llamada a `isEmergencyPressed()`
+2. **Detección de cambio**: Si el estado cambia, se reinicia el temporizador
+3. **Validación de estabilidad**: Solo después de 50ms estable se considera válido
+4. **Activación única**: El flag `emergencyTriggered` evita múltiples activaciones
+
+**Algoritmo:**
+```cpp
+bool HardwareControl::isEmergencyPressed() {
+    bool currentRead = digitalRead(EMERGENCY_BUTTON);
+
+    // Si cambió la lectura, reiniciar temporizador
+    if (currentRead != lastEmergencyButtonRead) {
+        lastEmergencyDebounceTime = millis();
+        lastEmergencyButtonRead = currentRead;
+    }
+
+    // Esperar a que sea estable por EMERGENCY_DEBOUNCE_MS
+    if ((millis() - lastEmergencyDebounceTime) > EMERGENCY_DEBOUNCE_MS) {
+        emergencyButtonState = currentRead;
+    }
+
+    return emergencyButtonState == LOW;  // Activo en LOW (pull-up)
+}
+```
+
+**Protección contra activaciones múltiples ([HardwareControl.cpp:40-51](src/HardwareControl.cpp)):**
+```cpp
+void HardwareControl::update() {
+    if (isEmergencyPressed()) {
+        if (!emergencyTriggered) {
+            emergencyTriggered = true;        // Activar solo una vez
+            emergencyShutdown();
+            Serial.println("[HARDWARE] ¡EMERGENCIA ACTIVADA!");
+        }
+    } else {
+        emergencyTriggered = false;  // Permitir reactivación al soltar
+    }
+}
+```
+
+**Ventajas del sistema:**
+- ✅ Elimina rebotes mecánicos (típicamente 5-20ms)
+- ✅ Filtra ruido eléctrico en el cableado
+- ✅ Evita múltiples llamadas a `emergencyShutdown()`
+- ✅ Permite reactivar emergencia al soltar y volver a presionar
+- ✅ No usa `delay()`, es completamente no bloqueante
+
+**Ajustar tiempo de debounce:**
+
+Si hay falsos contactos o el botón no responde:
+```cpp
+// En HardwareControl.h línea 66
+static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 100;  // Aumentar a 100ms
+```
+
+Valores recomendados:
+- **Botón mecánico nuevo**: 20-50ms
+- **Botón desgastado**: 50-100ms
+- **Cableado largo/ruidoso**: 100-150ms
+
 ## 📋 Página de Selección
 
 ### Resaltado de Botones de Programa
