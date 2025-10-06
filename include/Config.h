@@ -12,15 +12,15 @@ namespace HardwarePins {
     constexpr uint8_t EMERGENCY_BUTTON = 15;
 
     // Salidas - Motor
-    constexpr uint8_t MOTOR_DIR_LEFT = 12;
-    constexpr uint8_t MOTOR_DIR_RIGHT = 13;
-    constexpr uint8_t CENTRIFUGE = 14;
+    constexpr uint8_t MOTOR_DIR_LEFT = 14;
+    constexpr uint8_t MOTOR_DIR_RIGHT = 12;
+    constexpr uint8_t CENTRIFUGE = 27;
 
     // Salidas - Válvulas
-    constexpr uint8_t COLD_WATER_VALVE = 27;
+    constexpr uint8_t COLD_WATER_VALVE = 26;
     constexpr uint8_t HOT_WATER_VALVE = 33;
-    constexpr uint8_t DRAIN_VALVE = 25;
-    constexpr uint8_t DOOR_MAGNET = 26;
+    constexpr uint8_t DRAIN_VALVE = 13;
+    constexpr uint8_t DOOR_MAGNET = 25;
 
     // Comunicación Nextion
     constexpr uint8_t NEXTION_RX = 16;

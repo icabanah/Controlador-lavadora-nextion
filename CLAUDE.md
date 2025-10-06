@@ -85,13 +85,13 @@ Controlador-lavadora-nextion/
 
 **Salidas:**
 
-- Motor Izquierda: GPIO 12
-- Motor Derecha: GPIO 13
-- Centrifugado: GPIO 14
-- Válvula Agua Fría: GPIO 27
+- Motor Izquierda: GPIO 14
+- Motor Derecha: GPIO 12
+- Centrifugado: GPIO 27
+- Válvula Agua Fría: GPIO 26
 - Válvula Agua Caliente: GPIO 33
-- Válvula Drenaje: GPIO 25
-- Electroimán Puerta: GPIO 26
+- Válvula Drenaje: GPIO 13
+- Electroimán Puerta: GPIO 25
 
 **Entradas:**
 
