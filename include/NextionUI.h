@@ -52,6 +52,9 @@ public:
     // Utilidades
     void setText(const char* component, const char* text);
     void setNumber(const char* component, uint32_t value);
+    void setEnabled(const char* component, bool enabled);
+    void setEnabledById(uint8_t componentId, bool enabled);
+    void setBackgroundColor(const char* component, uint16_t color);
     void sendCommand(const char* cmd);
 
 private:

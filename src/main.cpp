@@ -77,16 +77,36 @@ void updateEditDisplay() {
 
     // Actualizar botones de tanda (desactivar tandas no usadas en P22/P23)
     uint8_t totalTandas = config.totalProcesses;
+
+    // IDs de botones de tanda (definidos en Config.h)
+    const uint8_t tandaIds[4] = {
+        NextionConfig::BTN_PROCESS1,
+        NextionConfig::BTN_PROCESS2,
+        NextionConfig::BTN_PROCESS3,
+        NextionConfig::BTN_PROCESS4
+    };
+
     for (int i = 0; i < 4; i++) {
         char tandaName[16];
         snprintf(tandaName, sizeof(tandaName), "tanda%d", i + 1);
 
         if (i < totalTandas) {
-            // Activa: resaltar si es la seleccionada
-            nextion.setNumber(tandaName, (i == tanda) ? 1 : 0);
+            // Tanda disponible: habilitar con tsw
+            nextion.setEnabledById(tandaIds[i], true);
+
+            // Cambiar color según si está seleccionada o no
+            if (i == tanda) {
+                nextion.setBackgroundColor(tandaName, NextionConfig::COLOR_ACTIVE);
+                nextion.setNumber(tandaName, 1);  // Valor seleccionado
+            } else {
+                nextion.setBackgroundColor(tandaName, NextionConfig::COLOR_INACTIVE);
+                nextion.setNumber(tandaName, 0);  // Valor no seleccionado
+            }
         } else {
-            // Inactiva: valor -1 o deshabilitada
-            nextion.setNumber(tandaName, 2);  // Estado "deshabilitado"
+            // Tanda no disponible: deshabilitar con tsw y color deshabilitado
+            nextion.setEnabledById(tandaIds[i], false);
+            nextion.setBackgroundColor(tandaName, NextionConfig::COLOR_DISABLED);
+            nextion.setNumber(tandaName, 0);
         }
     }
 
@@ -176,6 +196,50 @@ void decrementCurrentParameter() {
     updateEditDisplay();
 }
 
+void nextParameter() {
+    // Navegar al siguiente parámetro
+    switch (editState.currentParam) {
+        case PARAM_NIVEL:
+            editState.currentParam = PARAM_TEMP;
+            break;
+        case PARAM_TEMP:
+            editState.currentParam = PARAM_TIEMPO;
+            break;
+        case PARAM_TIEMPO:
+            editState.currentParam = PARAM_CENTRIF;
+            break;
+        case PARAM_CENTRIF:
+            editState.currentParam = PARAM_AGUA;
+            break;
+        case PARAM_AGUA:
+            editState.currentParam = PARAM_NIVEL;  // Ciclo
+            break;
+    }
+    updateEditDisplay();
+}
+
+void prevParameter() {
+    // Navegar al parámetro anterior
+    switch (editState.currentParam) {
+        case PARAM_NIVEL:
+            editState.currentParam = PARAM_AGUA;  // Ciclo
+            break;
+        case PARAM_TEMP:
+            editState.currentParam = PARAM_NIVEL;
+            break;
+        case PARAM_TIEMPO:
+            editState.currentParam = PARAM_TEMP;
+            break;
+        case PARAM_CENTRIF:
+            editState.currentParam = PARAM_TIEMPO;
+            break;
+        case PARAM_AGUA:
+            editState.currentParam = PARAM_CENTRIF;
+            break;
+    }
+    updateEditDisplay();
+}
+
 // ========================================
 // CALLBACK DE EVENTOS NEXTION
 // ========================================
@@ -246,12 +310,15 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
             case NextionConfig::BTN_PROCESS1:
                 editState.currentTanda = 0;
                 updateEditDisplay();
+                // Serial.println("[EDIT] Tanda 1 seleccionada");
                 break;
 
             case NextionConfig::BTN_PROCESS2:
                 if (config.totalProcesses > 1) {
                     editState.currentTanda = 1;
                     updateEditDisplay();
+                } else {
+                    // Serial.println("[EDIT] Tanda 2 no disponible para este programa");
                 }
                 break;
 
@@ -259,6 +326,9 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 if (config.totalProcesses > 2) {
                     editState.currentTanda = 2;
                     updateEditDisplay();
+                    // Serial.println("[EDIT] Tanda 3 seleccionada");
+                } else {
+                    // Serial.println("[EDIT] Tanda 3 no disponible para este programa");
                 }
                 break;
 
@@ -266,6 +336,9 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 if (config.totalProcesses > 3) {
                     editState.currentTanda = 3;
                     updateEditDisplay();
+                    // Serial.println("[EDIT] Tanda 4 seleccionada");
+                } else {
+                    // Serial.println("[EDIT] Tanda 4 no disponible para este programa");
                 }
                 break;
 
@@ -293,6 +366,17 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
             case NextionConfig::BTN_PANEL_AGUA:
                 editState.currentParam = PARAM_AGUA;
                 updateEditDisplay();
+                break;
+
+            // Botones de navegación de parámetros
+            case NextionConfig::BTN_PARAM_NEXT:
+                nextParameter();
+                Serial.println("[EDIT] Siguiente parámetro");
+                break;
+
+            case NextionConfig::BTN_PARAM_PREV:
+                prevParameter();
+                Serial.println("[EDIT] Parámetro anterior");
                 break;
 
             // Botones de incremento/decremento

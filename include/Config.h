@@ -85,6 +85,11 @@ namespace Timing {
 namespace NextionConfig {
     constexpr uint32_t BAUD_RATE = 115200;
 
+    // Colores Nextion (RGB565)
+    constexpr uint16_t COLOR_ACTIVE = 1024;      // Color para botón activo/seleccionado
+    constexpr uint16_t COLOR_INACTIVE = 50712;   // Color para botón inactivo/no seleccionado
+    constexpr uint16_t COLOR_DISABLED = 33840;   // Color para botón deshabilitado
+
     // Páginas
     constexpr uint8_t PAGE_WELCOME = 0;
     constexpr uint8_t PAGE_SELECTION = 1;

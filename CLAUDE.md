@@ -511,13 +511,15 @@ La página de edición permite modificar parámetros de cada proceso/tanda:
 - Tipo de agua (Caliente/Fría)
 
 **Navegación:**
-1. Seleccionar tanda con botones `tanda1`-`tanda4`
-2. Seleccionar parámetro presionando botón del panel derecho (`val_nivel`, `val_temp`, etc.)
+1. Seleccionar tanda con botones `tanda1`-`tanda4` (P22/P23: solo tanda1; P24: todas)
+2. Seleccionar parámetro:
+   - Presionando botón del panel derecho (`val_nivel`, `val_temp`, etc.)
+   - O usando botones "Siguiente"/"Anterior" (BTN_PARAM_NEXT/PREV - navegación cíclica)
 3. Modificar valor con botones `+` / `-`
 4. Guardar: Primera pulsación guarda, segunda vuelve a selección
 5. Cancelar: Descarta cambios y vuelve a selección
 
-**Implementación en [main.cpp:28-177](src/main.cpp):**
+**Implementación en [main.cpp:28-221](src/main.cpp):**
 
 ```cpp
 // Estructura de estado de edición
@@ -529,11 +531,51 @@ struct EditState {
 } editState;
 
 // Funciones principales
-void enterEditMode()          // Inicializa modo edición con backup
-void updateEditDisplay()      // Actualiza todos los componentes Nextion
-void incrementCurrentParameter()  // Incrementa parámetro actual
-void decrementCurrentParameter()  // Decrementa parámetro actual
+void enterEditMode()               // Inicializa modo edición con backup
+void updateEditDisplay()           // Actualiza todos los componentes Nextion
+void incrementCurrentParameter()   // Incrementa parámetro actual
+void decrementCurrentParameter()   // Decrementa parámetro actual
+void nextParameter()               // Navega al siguiente parámetro (cíclico)
+void prevParameter()               // Navega al parámetro anterior (cíclico)
 ```
+
+**Validación de Tandas:**
+- Botones `tanda2`, `tanda3`, `tanda4` solo responden en P24 (4 procesos)
+- En P22/P23 (1 proceso): botones se deshabilitan con `.en=0` (no presionables)
+- Estado visual: `.val=1` (seleccionado/resaltado), `.val=0` (disponible/normal)
+- Cambio de tanda actualiza automáticamente todos los valores del panel
+
+**Control de Estado de Botones ([main.cpp:89-111](src/main.cpp)):**
+```cpp
+// Para cada tanda
+if (i < totalTandas) {
+    nextion.setEnabledById(tandaIds[i], true);  // Habilitado con comando tsw
+
+    if (i == tanda) {
+        nextion.setBackgroundColor(tandaName, COLOR_ACTIVE);    // Color activo
+        nextion.setNumber(tandaName, 1);  // Valor seleccionado
+    } else {
+        nextion.setBackgroundColor(tandaName, COLOR_INACTIVE);  // Color inactivo
+        nextion.setNumber(tandaName, 0);  // Valor no seleccionado
+    }
+} else {
+    nextion.setEnabledById(tandaIds[i], false);  // Deshabilitado con tsw
+    nextion.setBackgroundColor(tandaName, COLOR_DISABLED);  // Color deshabilitado
+    nextion.setNumber(tandaName, 0);
+}
+```
+
+**Comandos Nextion:**
+- `tsw 26,1` → Habilita botón con ID 26 (tanda1)
+- `tsw 27,0` → Deshabilita botón con ID 27 (tanda2)
+- `tanda1.bco=1024` → Cambia color de fondo a COLOR_ACTIVE
+- `tanda2.bco=50712` → Cambia color de fondo a COLOR_INACTIVE
+- `tanda3.bco=33840` → Cambia color de fondo a COLOR_DISABLED
+
+**Colores Definidos ([Config.h:88-91](include/Config.h)):**
+- `COLOR_ACTIVE = 1024` (Verde/Activo - botón seleccionado)
+- `COLOR_INACTIVE = 50712` (Gris claro - botón disponible)
+- `COLOR_DISABLED = 33840` (Gris oscuro - botón deshabilitado)
 
 **IDs de Componentes del Panel ([Config.h:119-124](include/Config.h)):**
 - `BTN_PANEL_NIVEL = 18`

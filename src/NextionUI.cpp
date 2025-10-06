@@ -227,6 +227,27 @@ void NextionUI::setNumber(const char* component, uint32_t value) {
     sendCommand(cmd);
 }
 
+void NextionUI::setEnabled(const char* component, bool enabled) {
+    char cmd[64];
+    snprintf(cmd, sizeof(cmd), "%s.en=%d", component, enabled ? 1 : 0);
+    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    sendCommand(cmd);
+}
+
+void NextionUI::setEnabledById(uint8_t componentId, bool enabled) {
+    char cmd[64];
+    snprintf(cmd, sizeof(cmd), "tsw %d,%d", componentId, enabled ? 1 : 0);
+    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    sendCommand(cmd);
+}
+
+void NextionUI::setBackgroundColor(const char* component, uint16_t color) {
+    char cmd[64];
+    snprintf(cmd, sizeof(cmd), "%s.bco=%u", component, color);
+    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
+    sendCommand(cmd);
+}
+
 void NextionUI::sendCommand(const char* cmd) {
     serial->print(cmd);
     serial->write(0xFF);
