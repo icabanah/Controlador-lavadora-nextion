@@ -337,10 +337,12 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                     // Cambiar texto del botón a "Pausar"
                     nextion.setText("btnPausar", "Pausar");
                     stateMachine.resumeProgram();
+                    sensors.startMonitoring();  // REACTIVAR sensores al reanudar
                 } else {
                     // Cambiar texto del botón a "Reiniciar"
                     nextion.setText("btnPausar", "Reiniciar");
                     stateMachine.pauseProgram();
+                    sensors.stopMonitoring();  // DESACTIVAR sensores al pausar
                 }
                 break;
 
@@ -570,10 +572,10 @@ void updateUI() {
 
     lastUIUpdate = now;
 
-    // Actualizar página de ejecución si estamos en proceso
-    if (state >= STATE_FILLING && state <= STATE_COOLING) {
-        // Mostrar tiempo restante si está en fase de lavado, sino 0
-        uint16_t phaseTime = stateMachine.isTimerActive()
+    // Actualizar página de ejecución si estamos en proceso o pausado
+    if ((state >= STATE_FILLING && state <= STATE_COOLING) || state == STATE_PAUSED) {
+        // Mostrar tiempo restante si está en fase de lavado o pausado, sino 0
+        uint16_t phaseTime = (stateMachine.isTimerActive() || state == STATE_PAUSED)
             ? stateMachine.getPhaseRemainingTime() / 1000
             : 0;
         // Tiempo total del programa (valor fijo calculado, no cambia durante ejecución)
@@ -590,6 +592,17 @@ void updateUI() {
             config.centrifugeEnabled[config.currentProcess],
             config.waterType[config.currentProcess]
         );
+
+        // Parpadeo del temporizador cuando está pausado (alternar visibilidad)
+        static bool blinkState = false;
+        if (state == STATE_PAUSED) {
+            blinkState = !blinkState;
+            // Alternar visibilidad del componente tiempo_ejec
+            nextion.sendCommand(blinkState ? "vis tiempo_ejec,1" : "vis tiempo_ejec,0");
+        } else {
+            // Asegurar que esté visible cuando no está pausado
+            nextion.sendCommand("vis tiempo_ejec,1");
+        }
     }
 }
 

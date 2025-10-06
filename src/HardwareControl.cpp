@@ -170,5 +170,6 @@ void HardwareControl::emergencyShutdown() {
 
 void HardwareControl::resetAll() {
     emergencyShutdown();
-    closeDrain();
+    // Mantener drenaje ABIERTO al iniciar (para vaciar cualquier agua residual)
+    // closeDrain(); - Comentado para dejar el drenaje abierto al inicio
 }
