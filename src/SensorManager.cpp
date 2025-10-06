@@ -31,10 +31,32 @@ void SensorManager::begin() {
         tempSensorFound = true;
         tempSensor.setResolution(SensorConfig::TEMP_RESOLUTION);
         Serial.println("Sensor de temperatura DS18B20 encontrado.");
-        // Opcional: verificar si la dirección encontrada es la que esperamos
-        // if (memcmp(addr, SensorConfig::TEMP_SENSOR_ADDR, 8) != 0) {
-        //     Serial.println("ADVERTENCIA: La dirección del sensor no coincide con la configurada.");
-        // }
+
+        // Mostrar dirección encontrada para debug
+        Serial.print("Dirección detectada: {");
+        for (int i = 0; i < 8; i++) {
+            Serial.print("0x");
+            if (addr[i] < 16) Serial.print("0");
+            Serial.print(addr[i], HEX);
+            if (i < 7) Serial.print(", ");
+        }
+        Serial.println("}");
+
+        // Verificar si la dirección encontrada es la que esperamos
+        if (memcmp(addr, SensorConfig::TEMP_SENSOR_ADDR, 8) != 0) {
+            Serial.println("*** ADVERTENCIA: La dirección del sensor NO coincide con Config.h ***");
+            Serial.print("Dirección en Config.h: {");
+            for (int i = 0; i < 8; i++) {
+                Serial.print("0x");
+                if (SensorConfig::TEMP_SENSOR_ADDR[i] < 16) Serial.print("0");
+                Serial.print(SensorConfig::TEMP_SENSOR_ADDR[i], HEX);
+                if (i < 7) Serial.print(", ");
+            }
+            Serial.println("}");
+            Serial.println("*** ACTUALIZA Config.h línea 44 con la dirección detectada ***");
+        } else {
+            Serial.println("Dirección del sensor OK (coincide con Config.h)");
+        }
     } else {
         Serial.println("ADVERTENCIA: Sensor de temperatura DS18B20 NO encontrado. Funcionando sin él.");
     }
@@ -44,16 +66,16 @@ void SensorManager::begin() {
 
     // NO usar tare() para evitar bloqueos en el inicio
     // La calibración se hará manualmente ajustando PRESSURE_OFFSET en Config.h
-    Serial.println("Sensor de presión inicializado (sin auto-calibración).");
+    // Serial.println("Sensor de presión inicializado (sin auto-calibración).");
 
     // Mostrar umbrales de calibración
-    Serial.println("\n=== Umbrales de presión configurados ===");
-    Serial.printf("Nivel 0: < %d (sin agua)\n", SensorConfig::PRESSURE_LEVEL_1);
-    Serial.printf("Nivel 1: %d - %d\n", SensorConfig::PRESSURE_LEVEL_1, SensorConfig::PRESSURE_LEVEL_2 - 1);
-    Serial.printf("Nivel 2: %d - %d\n", SensorConfig::PRESSURE_LEVEL_2, SensorConfig::PRESSURE_LEVEL_3 - 1);
-    Serial.printf("Nivel 3: %d - %d\n", SensorConfig::PRESSURE_LEVEL_3, SensorConfig::PRESSURE_LEVEL_4 - 1);
-    Serial.printf("Nivel 4: >= %d (lleno)\n", SensorConfig::PRESSURE_LEVEL_4);
-    Serial.println("========================================\n");
+    // Serial.println("\n=== Umbrales de presión configurados ===");
+    // Serial.printf("Nivel 0: < %d (sin agua)\n", SensorConfig::PRESSURE_LEVEL_1);
+    // Serial.printf("Nivel 1: %d - %d\n", SensorConfig::PRESSURE_LEVEL_1, SensorConfig::PRESSURE_LEVEL_2 - 1);
+    // Serial.printf("Nivel 2: %d - %d\n", SensorConfig::PRESSURE_LEVEL_2, SensorConfig::PRESSURE_LEVEL_3 - 1);
+    // Serial.printf("Nivel 3: %d - %d\n", SensorConfig::PRESSURE_LEVEL_3, SensorConfig::PRESSURE_LEVEL_4 - 1);
+    // Serial.printf("Nivel 4: >= %d (lleno)\n", SensorConfig::PRESSURE_LEVEL_4);
+    // Serial.println("========================================\n");
 
     // Primera lectura
     forceRead();
@@ -83,13 +105,13 @@ void SensorManager::update() {
 
 void SensorManager::startMonitoring() {
     monitoringActive = true;
-    Serial.println("[SENSOR] Monitoreo ACTIVADO");
+    // Serial.println("[SENSOR] Monitoreo ACTIVADO");
 }
 
 void SensorManager::stopMonitoring() {
     monitoringActive = false;
     tempConversionInProgress = false;  // Cancelar conversión en progreso
-    Serial.println("[SENSOR] Monitoreo DESACTIVADO");
+    // Serial.println("[SENSOR] Monitoreo DESACTIVADO");
 }
 
 // ========================================

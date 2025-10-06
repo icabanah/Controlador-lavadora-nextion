@@ -135,7 +135,7 @@ Botones:
 
 - NEXTION_COMP_TEMP_EJECUCION "temp_ejec"             // objName en nextion de la temperatura en ejecución
 - NEXTION_COMP_NIVEL_EJECUCION "nivel_ejec"           // objName en nextion del nivel de agua del proceso actual en ejecución
-- NEXTION_COMP_BARRA_TEMP_EJECUCION "barra_temp"      // objName en nextion de la barra del tiempo transcurrido (0 a 100)
+- NEXTION_COMP_BARRA_TEMP_EJECUCION "barra_temp"      // objName en nextion de la barra de temperatura (0 a 100)
 - NEXTION_COMP_BARRA_NIVEL_EJECUCION "barra_nivel"    // objName en nextion de la barra del nivel de agua (0 a 100 = 0 a 4)
 <!-- - NEXTION_COMP_BARRA_VELOC_EJECUCION "barra_veloc"    // objName en nextion de la barra de velocidad (0 a 100) -->
 

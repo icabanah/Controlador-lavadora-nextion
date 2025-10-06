@@ -40,7 +40,9 @@ namespace SensorConfig {
     // Temperatura DS18B20
     constexpr uint8_t TEMP_RESOLUTION = 9;  // 0.5°C precisión
     constexpr uint8_t TEMP_TOLERANCE = 2;   // ±2°C rango de control
-    const uint8_t TEMP_SENSOR_ADDR[8] = {0x28, 0xFF, 0x64, 0x1E, 0x0C, 0x31, 0x18, 0x66};
+    // const uint8_t TEMP_SENSOR_ADDR[8] = {0x28, 0xFF, 0x64, 0x1E, 0x0C, 0x31, 0x18, 0x66};
+    // const uint8_t TEMP_SENSOR_ADDR[8] = {0x93, 0x16, 0x4, 0x7A, 0x28, 0xFF, 0x7, 0x3};
+    const uint8_t TEMP_SENSOR_ADDR[8] = {0x28, 0xFF, 0x07, 0x03, 0x93, 0x16, 0x04, 0x7A};
 
     // Sensor de presión HX710B - Calibración MANUAL (sin tare)
     // PASO 1: Con tanque VACÍO, anotar valor pascal() del monitor serial

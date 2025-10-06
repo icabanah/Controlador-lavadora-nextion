@@ -172,6 +172,11 @@ void NextionUI::updateExecutionDisplay(
     // Barras de progreso (estas Si usan .val porque son progress bars)
     setNumber("barra_nivel", (waterLevel * 100) / 4);
 
+    // Barra de temperatura (0-100°C mapeado a 0-100%)
+    uint8_t tempPercent = (uint8_t)constrain(temperature, 0, 100);
+    setNumber("barra_temp", tempPercent);
+
+
     // Centrifugado
     setText("centrif_ejec", centrifuge ? "Si" : "No");
 
