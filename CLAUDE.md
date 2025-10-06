@@ -584,10 +584,105 @@ if (i < totalTandas) {
 - `BTN_PANEL_CENTRIF = 23`
 - `BTN_PANEL_AGUA = 24`
 
+## 💾 Almacenamiento Persistente
+
+### Módulo Storage - Preferences ESP32
+
+El sistema guarda las configuraciones de los 3 programas en la memoria flash del ESP32 usando la biblioteca Preferences.
+
+**Características:**
+- Almacenamiento persistente (datos permanecen después de apagar el ESP32)
+- Restauración automática de valores de fábrica en primer arranque
+- Namespace: `"washer"`
+
+**Estructura de Claves en Preferences:**
+```
+Formato: p{programNumber}_{processIndex}_{parámetro}
+
+Ejemplos:
+- p22_0_nivel  → Nivel de agua del proceso 0 del programa 22
+- p22_0_temp   → Temperatura del proceso 0 del programa 22
+- p24_2_centrif → Centrifugado del proceso 2 del programa 24
+- p24_total    → Número total de procesos del programa 24
+```
+
+**Funciones Principales ([Storage.h](include/Storage.h), [Storage.cpp](src/Storage.cpp)):**
+
+```cpp
+// Inicialización (en setup)
+storage.begin();
+
+// Guardar programa completo
+storage.saveProgram(programNumber, config);
+
+// Cargar programa completo
+storage.loadProgram(programNumber, config);
+
+// Guardar solo un proceso específico
+storage.saveProcess(programNumber, processIndex, config);
+
+// Restaurar valores de fábrica (todos los programas)
+storage.restoreDefaults();
+
+// Verificar si existe configuración guardada
+storage.hasStoredConfig(programNumber);
+
+// Limpiar toda la memoria
+storage.clearAll();
+```
+
+**Flujo de Uso:**
+
+1. **Al iniciar el ESP32:**
+   - `storage.begin()` verifica si es primera vez
+   - Si es primera vez: crea valores de fábrica para P22, P23, P24
+   - Si ya hay datos: los deja intactos
+
+2. **Al seleccionar un programa:**
+   - Intenta cargar configuración guardada: `storage.loadProgram()`
+   - Si no existe: usa valores por defecto
+
+3. **Al editar parámetros:**
+   - Usuario modifica valores en página de edición
+   - Primer clic en "Guardar": `storage.saveProgram()` guarda en flash
+   - Segundo clic en "Guardar": vuelve a página de selección
+
+4. **Al cancelar edición:**
+   - Restaura backup temporal (no afecta memoria persistente)
+
+**Implementación en [main.cpp](src/main.cpp):**
+
+```cpp
+// Inicialización (línea 542-543)
+Serial.println("Inicializando almacenamiento...");
+storage.begin();
+
+// Cargar al seleccionar programa (líneas 263-266)
+if (!storage.loadProgram(22, stateMachine.getConfig())) {
+    stateMachine.getConfig().setDefaults(PROGRAM_22);
+}
+
+// Guardar al editar (línea 411)
+storage.saveProgram(config.programNumber, config);
+```
+
+**Valores Guardados por Proceso:**
+- `nivel` (uint8_t): Nivel de agua (1-4)
+- `temp` (uint8_t): Temperatura (°C)
+- `time` (uint8_t): Tiempo (minutos)
+- `centrif` (bool): Centrifugado habilitado
+- `water` (uint8_t): Tipo de agua (0=Fría, 1=Caliente)
+
+**Límites de Memoria:**
+- Preferences usa partición NVS del ESP32 (típicamente 20KB)
+- Cada programa ocupa ~40 bytes (3 programas × 4 procesos × 5 parámetros)
+- Espacio total usado: ~120 bytes
+- Amplio margen disponible para futuras expansiones
+
 ## 📝 TODOs Pendientes
 
 - [x] Implementar navegación completa en página de edición
-- [ ] Guardar configuraciones en EEPROM/NVS
+- [x] Guardar configuraciones en EEPROM/NVS
 - [ ] Agregar watchdog timer para emergencias
 - [ ] Crear archivo .HMI para Nextion Editor
 - [ ] Pruebas con hardware real

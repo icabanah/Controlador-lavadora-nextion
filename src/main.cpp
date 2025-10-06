@@ -4,6 +4,7 @@
 #include "HardwareControl.h"
 #include "SensorManager.h"
 #include "NextionUI.h"
+#include "Storage.h"
 
 // ========================================
 // INSTANCIAS GLOBALES
@@ -13,6 +14,7 @@ StateMachine stateMachine;
 HardwareControl hardware;
 SensorManager sensors;
 NextionUI nextion;
+Storage storage;
 
 // ========================================
 // VARIABLES DE TIEMPO Y ESTADO
@@ -257,16 +259,29 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
         switch (componentId) {
             case NextionConfig::BTN_PROGRAM1:
                 stateMachine.selectProgram(PROGRAM_22);
+                // Cargar configuración guardada si existe
+                if (!storage.loadProgram(22, stateMachine.getConfig())) {
+                    // Si no existe, usar valores por defecto
+                    stateMachine.getConfig().setDefaults(PROGRAM_22);
+                }
                 nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
 
             case NextionConfig::BTN_PROGRAM2:
                 stateMachine.selectProgram(PROGRAM_23);
+                // Cargar configuración guardada si existe
+                if (!storage.loadProgram(23, stateMachine.getConfig())) {
+                    stateMachine.getConfig().setDefaults(PROGRAM_23);
+                }
                 nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
 
             case NextionConfig::BTN_PROGRAM3:
                 stateMachine.selectProgram(PROGRAM_24);
+                // Cargar configuración guardada si existe
+                if (!storage.loadProgram(24, stateMachine.getConfig())) {
+                    stateMachine.getConfig().setDefaults(PROGRAM_24);
+                }
                 nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
 
@@ -391,9 +406,10 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
             // Botón Guardar (doble clic: primero guarda, segundo sale)
             case NextionConfig::BTN_SAVE:
                 if (!editState.editingValue) {
-                    // Primera vez: guardar configuración
+                    // Primera vez: guardar configuración en memoria persistente
                     editState.editingValue = true;
-                    Serial.println("[EDIT] Configuración guardada");
+                    storage.saveProgram(config.programNumber, config);
+                    Serial.println("[EDIT] Configuración guardada en memoria");
                 } else {
                     // Segunda vez: salir a página de selección
                     editState.editingValue = false;
@@ -521,6 +537,10 @@ void setup() {
     Serial.println("\n\n========================================");
     Serial.println("Controlador de Lavadora - ESP32");
     Serial.println("========================================\n");
+
+    // Inicializar almacenamiento persistente
+    Serial.println("Inicializando almacenamiento...");
+    storage.begin();
 
     // Inicializar módulos
     Serial.println("Inicializando hardware...");

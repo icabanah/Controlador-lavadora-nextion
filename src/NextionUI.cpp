@@ -95,8 +95,6 @@ void NextionUI::showEmergency() {
 void NextionUI::updateSelectionDisplay(const ProgramConfig& config) {
     char buffer[32];
 
-    // Serial.println("=== Actualizando pantalla de selección ===");
-    // Serial.printf("Programa: %d, Proceso: %d\n", config.programNumber, config.currentProcess);
 
     // Mostrar programa seleccionado
     snprintf(buffer, sizeof(buffer), "P%d", config.programNumber);
@@ -121,7 +119,7 @@ void NextionUI::updateSelectionDisplay(const ProgramConfig& config) {
     // Serial.printf("  val_tiempo = %s\n", buffer);
 
     // Centrifugado
-    const char* centrif = config.centrifugeEnabled[proc] ? "Sí" : "No";
+    const char* centrif = config.centrifugeEnabled[proc] ? "Si" : "No";
     setText("val_centrif", centrif);
     // Serial.printf("  val_centrif = %s\n", centrif);
 
@@ -129,8 +127,6 @@ void NextionUI::updateSelectionDisplay(const ProgramConfig& config) {
     const char* agua = getWaterTypeText(config.waterType[proc]);
     setText("val_agua", agua);
     // Serial.printf("  val_agua = %s\n", agua);
-
-    // Serial.println("==========================================");
 }
 
 void NextionUI::updateExecutionDisplay(
@@ -173,11 +169,11 @@ void NextionUI::updateExecutionDisplay(
     snprintf(buffer, sizeof(buffer), "%d", waterLevel);
     setText("nivel_ejec", buffer);
 
-    // Barras de progreso (estas SÍ usan .val porque son progress bars)
+    // Barras de progreso (estas Si usan .val porque son progress bars)
     setNumber("barra_nivel", (waterLevel * 100) / 4);
 
     // Centrifugado
-    setText("centrif_ejec", centrifuge ? "Sí" : "No");
+    setText("centrif_ejec", centrifuge ? "Si" : "No");
 
     // Tipo de agua
     setText("agua_ejec", getWaterTypeText(waterType));
@@ -330,5 +326,5 @@ const char* NextionUI::getPhaseText(uint8_t phase) {
 }
 
 const char* NextionUI::getWaterTypeText(WaterType type) {
-    return (type == WATER_HOT) ? "Caliente" : "Fría";
+    return (type == WATER_HOT) ? "Caliente" : "Fria";
 }
