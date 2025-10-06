@@ -66,6 +66,8 @@ StateMachine::StateMachine()
 // ========================================
 
 void StateMachine::begin() {
+    // Seleccionar programa por defecto (P22)
+    config.setDefaults(PROGRAM_22);
     setState(STATE_INIT);
 }
 

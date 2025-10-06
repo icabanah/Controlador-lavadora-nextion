@@ -95,26 +95,42 @@ void NextionUI::showEmergency() {
 void NextionUI::updateSelectionDisplay(const ProgramConfig& config) {
     char buffer[32];
 
+    // Serial.println("=== Actualizando pantalla de selección ===");
+    // Serial.printf("Programa: %d, Proceso: %d\n", config.programNumber, config.currentProcess);
+
     // Mostrar programa seleccionado
     snprintf(buffer, sizeof(buffer), "P%d", config.programNumber);
     setText("progr_sel", buffer);
+    // Serial.printf("  progr_sel = %s\n", buffer);
 
     uint8_t proc = config.currentProcess;
 
-    // Nivel de agua
-    setNumber("val_nivel", config.waterLevel[proc]);
+    // Nivel de agua (como texto)
+    snprintf(buffer, sizeof(buffer), "%d", config.waterLevel[proc]);
+    setText("val_nivel", buffer);
+    // Serial.printf("  val_nivel = %s\n", buffer);
 
-    // Temperatura
-    setNumber("val_temp", config.temperature[proc]);
+    // Temperatura (como texto)
+    snprintf(buffer, sizeof(buffer), "%d", config.temperature[proc]);
+    setText("val_temp", buffer);
+    // Serial.printf("  val_temp = %s\n", buffer);
 
-    // Tiempo
-    setNumber("val_tiempo", config.time[proc]);
+    // Tiempo (como texto)
+    snprintf(buffer, sizeof(buffer), "%d", config.time[proc]);
+    setText("val_tiempo", buffer);
+    // Serial.printf("  val_tiempo = %s\n", buffer);
 
     // Centrifugado
-    setText("val_centrif", config.centrifugeEnabled[proc] ? "Sí" : "No");
+    const char* centrif = config.centrifugeEnabled[proc] ? "Sí" : "No";
+    setText("val_centrif", centrif);
+    // Serial.printf("  val_centrif = %s\n", centrif);
 
     // Tipo de agua
-    setText("val_agua", getWaterTypeText(config.waterType[proc]));
+    const char* agua = getWaterTypeText(config.waterType[proc]);
+    setText("val_agua", agua);
+    // Serial.printf("  val_agua = %s\n", agua);
+
+    // Serial.println("==========================================");
 }
 
 void NextionUI::updateExecutionDisplay(
@@ -137,8 +153,9 @@ void NextionUI::updateExecutionDisplay(
     // Fase
     setText("fase_ejec", getPhaseText(phase));
 
-    // Proceso/Tanda
-    setNumber("tanda_ejec", process + 1);
+    // Proceso/Tanda (como texto)
+    snprintf(buffer, sizeof(buffer), "%d", process + 1);
+    setText("tanda_ejec", buffer);
 
     // Tiempo de fase
     formatTime(phaseTime, buffer, sizeof(buffer));
@@ -152,10 +169,11 @@ void NextionUI::updateExecutionDisplay(
     snprintf(buffer, sizeof(buffer), "%.1f C", temperature);
     setText("temp_ejec", buffer);
 
-    // Nivel
-    setNumber("nivel_ejec", waterLevel);
+    // Nivel (como texto)
+    snprintf(buffer, sizeof(buffer), "%d", waterLevel);
+    setText("nivel_ejec", buffer);
 
-    // Barra de nivel (0-100%)
+    // Barras de progreso (estas SÍ usan .val porque son progress bars)
     setNumber("barra_nivel", (waterLevel * 100) / 4);
 
     // Centrifugado
@@ -172,13 +190,13 @@ void NextionUI::updateEditDisplay(
 {
     char buffer[16];
 
-    // Resaltar proceso activo
+    // Resaltar proceso activo (los botones de tanda pueden usar .val para estado)
     for (int i = 1; i <= 4; i++) {
         snprintf(buffer, sizeof(buffer), "tanda%d", i);
         setNumber(buffer, (i == process + 1) ? 1 : 0);  // 1=activo, 0=inactivo
     }
 
-    // Mostrar parámetro y valor
+    // Mostrar parámetro y valor (como texto)
     setText("param", paramName);
     setText("param_value", paramValue);
 }
@@ -198,12 +216,14 @@ void NextionUI::setButtonCallback(void (*callback)(uint8_t, uint8_t, uint8_t)) {
 void NextionUI::setText(const char* component, const char* text) {
     char cmd[128];
     snprintf(cmd, sizeof(cmd), "%s.txt=\"%s\"", component, text);
+    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
     sendCommand(cmd);
 }
 
 void NextionUI::setNumber(const char* component, uint32_t value) {
     char cmd[64];
     snprintf(cmd, sizeof(cmd), "%s.val=%lu", component, value);
+    Serial.printf("[NEXTION] Enviando: %s\n", cmd);
     sendCommand(cmd);
 }
 
