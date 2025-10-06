@@ -15,10 +15,11 @@ SensorManager sensors;
 NextionUI nextion;
 
 // ========================================
-// VARIABLES DE TIEMPO
+// VARIABLES DE TIEMPO Y ESTADO
 // ========================================
 
 unsigned long lastUIUpdate = 0;
+SystemState lastDisplayedState = STATE_INIT;
 
 // ========================================
 // CALLBACK DE EVENTOS NEXTION
@@ -141,14 +142,64 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
 void updateUI() {
     unsigned long now = millis();
 
+    SystemState state = stateMachine.getState();
+    ProgramConfig& config = stateMachine.getConfig();
+
+    // Cambiar página de Nextion si el estado cambió
+    if (state != lastDisplayedState) {
+        lastDisplayedState = state;
+
+        switch (state) {
+            case STATE_WELCOME:
+                nextion.showWelcome();
+                Serial.println("UI: Mostrando página de bienvenida");
+                break;
+
+            case STATE_SELECTION:
+                nextion.showSelection();
+                nextion.updateSelectionDisplay(config);
+                Serial.println("UI: Mostrando página de selección");
+                break;
+
+            case STATE_FILLING:
+            case STATE_WASHING:
+            case STATE_DRAINING:
+            case STATE_SPINNING:
+            case STATE_COOLING:
+                nextion.showExecution();
+                Serial.println("UI: Mostrando página de ejecución");
+                break;
+
+            case STATE_PAUSED:
+                Serial.println("UI: Programa pausado");
+                break;
+
+            case STATE_COMPLETED:
+                Serial.println("UI: Programa completado");
+                nextion.showSelection();
+                break;
+
+            case STATE_ERROR:
+                nextion.showError("Error del sistema");
+                Serial.println("UI: Mostrando página de error");
+                break;
+
+            case STATE_EMERGENCY:
+                nextion.showEmergency();
+                Serial.println("UI: EMERGENCIA ACTIVADA");
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // Actualizar datos solo cada intervalo
     if (now - lastUIUpdate < Timing::UI_UPDATE_INTERVAL_MS) {
         return;
     }
 
     lastUIUpdate = now;
-
-    SystemState state = stateMachine.getState();
-    ProgramConfig& config = stateMachine.getConfig();
 
     // Actualizar página de ejecución si estamos en proceso
     if (state >= STATE_FILLING && state <= STATE_COOLING) {
@@ -194,10 +245,8 @@ void setup() {
     Serial.println("Inicializando máquina de estados...");
     stateMachine.begin();
 
-    // Mostrar pantalla de bienvenida
-    nextion.showWelcome();
-
     Serial.println("\nSistema iniciado correctamente.\n");
+    Serial.println("Esperando 3 segundos para pasar a selección...");
 }
 
 // ========================================

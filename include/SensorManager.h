@@ -44,6 +44,7 @@ private:
     long currentPressure;
     uint8_t currentWaterLevel;
     unsigned long lastPressureRead;
+    bool tempSensorFound;
 
     // Métodos privados
     void readTemperature();
