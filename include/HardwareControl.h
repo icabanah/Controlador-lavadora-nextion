@@ -63,7 +63,7 @@ private:
 
     // Configuración de tiempos
     static constexpr uint16_t MOTOR_TOGGLE_INTERVAL_MS = 5000;  // Cambia cada 5 segundos
-    static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 100;        // Tiempo de antirrebote (100ms)
+    static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 200;        // Tiempo de antirrebote (100ms)
 };
 
 #endif // HARDWARE_CONTROL_H
