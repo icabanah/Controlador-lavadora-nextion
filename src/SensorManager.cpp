@@ -41,14 +41,9 @@ void SensorManager::begin() {
     // Inicializar sensor de presión
     pressureSensor.begin(HardwarePins::PRESSURE_DOUT, HardwarePins::PRESSURE_SCLK);
 
-    // Calibrar sensor de presión (establecer offset)
-    Serial.println("Calibrando sensor de presión...");
-    if (pressureSensor.wait_ready_timeout(1000, 100)) {
-        pressureSensor.tare(10); // 10 lecturas para establecer offset
-        Serial.println("Sensor de presión calibrado correctamente.");
-    } else {
-        Serial.println("ADVERTENCIA: Timeout esperando sensor de presión.");
-    }
+    // NO usar tare() para evitar bloqueos en el inicio
+    // La calibración se hará manualmente ajustando PRESSURE_OFFSET en Config.h
+    Serial.println("Sensor de presión inicializado (sin auto-calibración).");
 
     // Mostrar umbrales de calibración
     Serial.println("\n=== Umbrales de presión configurados ===");
@@ -70,11 +65,9 @@ void SensorManager::begin() {
 void SensorManager::update() {
     unsigned long now = millis();
 
-    // Leer temperatura cada intervalo, solo si existe el sensor
-    if (now - lastTempRead >= Timing::SENSOR_READ_INTERVAL_MS) {
-        readTemperature();
-        lastTempRead = now;
-    }
+    // Temperatura: Llamar SIEMPRE (es asíncrona, no bloquea)
+    // Esto permite verificar constantemente si la conversión terminó
+    readTemperature();
 
     // Leer presión cada intervalo
     if (now - lastPressureRead >= Timing::SENSOR_READ_INTERVAL_MS) {
@@ -132,6 +125,7 @@ void SensorManager::readTemperature() {
         if (tempSensor.isConversionComplete()) {
             float temp = tempSensor.getTempC(SensorConfig::TEMP_SENSOR_ADDR);
             tempConversionInProgress = false;
+            lastTempRead = millis();  // Actualizar timestamp al completar
 
             if (temp != DEVICE_DISCONNECTED_C && temp >= -55 && temp <= 125) {
                 currentTemperature = temp;
@@ -141,11 +135,14 @@ void SensorManager::readTemperature() {
                 Serial.println("Error: Sensor de temperatura desconectado");
             }
         }
-        // Si no terminó, esperar al próximo ciclo
+        // Si no terminó, esperar al próximo ciclo (NO BLOQUEA)
     } else {
-        // Iniciar nueva conversión
-        tempSensor.requestTemperatures();
-        tempConversionInProgress = true;
+        // Solo iniciar nueva conversión si pasó el intervalo
+        unsigned long now = millis();
+        if (now - lastTempRead >= Timing::SENSOR_READ_INTERVAL_MS) {
+            tempSensor.requestTemperatures();
+            tempConversionInProgress = true;
+        }
     }
 }
 
@@ -163,8 +160,8 @@ void SensorManager::readPressure() {
 }
 
 uint8_t SensorManager::calculateWaterLevel(long pressure) {
-    // Implementación con interpolación lineal entre niveles (igual que código anterior)
-    float pressureFloat = (float)pressure;
+    // Aplicar offset manual (sin tare)
+    float pressureFloat = (float)(pressure - SensorConfig::PRESSURE_OFFSET);
 
     if (pressureFloat < SensorConfig::PRESSURE_LEVEL_1) {
         return 0;  // Sin agua

@@ -620,7 +620,7 @@ void loop() {
     // Actualizar módulos principales
     stateMachine.update();
     hardware.update();
-    sensors.update();
+    // sensors.update();
     nextion.update();
 
     // Actualizar interfaz de usuario

@@ -42,19 +42,19 @@ namespace SensorConfig {
     constexpr uint8_t TEMP_TOLERANCE = 2;   // ±2°C rango de control
     const uint8_t TEMP_SENSOR_ADDR[8] = {0x28, 0xFF, 0x64, 0x1E, 0x0C, 0x31, 0x18, 0x66};
 
-    // Sensor de presión HX710B - Calibración
-    // La función tare() establece automáticamente el offset a 0 con el tanque vacío
-    // PASO 1: Ejecutar con tanque VACÍO (tare() se ejecuta en begin())
-    // PASO 2: Llenar tanque a cada nivel y anotar valores RAW del monitor serial
-    // PASO 3: Actualizar PRESSURE_LEVEL_1 a PRESSURE_LEVEL_4 con esos valores
+    // Sensor de presión HX710B - Calibración MANUAL (sin tare)
+    // PASO 1: Con tanque VACÍO, anotar valor pascal() del monitor serial
+    // PASO 2: Configurar PRESSURE_OFFSET = valor_vacio
+    // PASO 3: Llenar tanque a cada nivel y anotar valores (pascal - offset)
+    // PASO 4: Actualizar PRESSURE_LEVEL_1 a PRESSURE_LEVEL_4
 
-    constexpr long PRESSURE_OFFSET = 0;  // Ya no se usa (tare() calibra automáticamente)
+    constexpr long PRESSURE_OFFSET = 565;  // Valor pascal() cuando tanque vacío (~565 Pa)
 
-    // Niveles de agua (valores RAW directos después de tare())
-    constexpr uint16_t PRESSURE_LEVEL_1 = 601;   // Nivel 1
-    constexpr uint16_t PRESSURE_LEVEL_2 = 628;   // Nivel 2
-    constexpr uint16_t PRESSURE_LEVEL_3 = 645;   // Nivel 3
-    constexpr uint16_t PRESSURE_LEVEL_4 = 663;   // Nivel 4
+    // Niveles de agua (valores después de restar offset)
+    constexpr uint16_t PRESSURE_LEVEL_1 = 36;    // 601 - 565 = ~36
+    constexpr uint16_t PRESSURE_LEVEL_2 = 63;    // 628 - 565 = ~63
+    constexpr uint16_t PRESSURE_LEVEL_3 = 80;    // 645 - 565 = ~80
+    constexpr uint16_t PRESSURE_LEVEL_4 = 98;    // 663 - 565 = ~98
 }
 
 // ========================================
