@@ -163,9 +163,18 @@ printh 65 01 01 01
 ### Comportamiento de Página de Ejecución
 
 **Temporizador:**
-- El temporizador **solo comienza** cuando se alcanza el nivel de agua seteado (fase de lavado)
-- Muestra cuenta regresiva (tiempo restante) solo durante la fase de lavado
-- En otras fases (llenado, drenaje, centrifugado, enfriamiento) muestra 0
+- `tiempo_ejec`: Muestra tiempo **restante** (cuenta regresiva)
+  - **Solo comienza** cuando se alcanza el nivel de agua seteado (fase de lavado)
+  - Durante fase de lavado: muestra cuenta regresiva del tiempo configurado
+  - En otras fases (llenado, drenaje, centrifugado, enfriamiento): muestra 0
+- `tiempo_total`: Muestra tiempo **total estimado** del programa (valor fijo)
+  - Se calcula al inicio: suma de tiempos de lavado + drenaje + centrifugado (si habilitado) + enfriamiento
+  - No varía durante la ejecución del programa
+  - Formato: MM:SS
+
+**Motor de Lavado:**
+- Los pines de izquierda y derecha se intercalan automáticamente cada 5 segundos durante la fase de lavado
+- Implementado en `HardwareControl::toggleMotorDirection()` con intervalo `MOTOR_TOGGLE_INTERVAL_MS = 5000`
 
 **Botón Pausa/Reiniciar:**
 - **Pausar**: Detiene completamente el programa
@@ -180,9 +189,9 @@ printh 65 01 01 01
   - Botón cambia texto a "Pausar"
 
 **Control de Puerta:**
-- Se cierra (bloquea) al iniciar el programa
+- Se cierra (bloquea) **antes de iniciar** el programa (importante para evitar rebalse)
 - Permanece cerrada durante todas las fases, incluso en pausa
-- Se abre **solo al finalizar la fase de enfriamiento**
+- Se abre **solo al finalizar la fase de enfriamiento** o al presionar "Parar"
 - En Programa 24 (multiproceso): se abre solo al terminar el último proceso
 
 ## 🚫 REGLAS IMPORTANTES DE CÓDIGO

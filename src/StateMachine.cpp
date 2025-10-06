@@ -151,7 +151,11 @@ void StateMachine::resumeProgram() {
 }
 
 void StateMachine::stopProgram() {
-    hardware.resetAll();
+    hardware.stopMotor();
+    hardware.stopCentrifuge();
+    hardware.closeWaterValves();
+    hardware.closeDrain();
+    hardware.unlockDoor();  // Abrir puerta al detener programa
     setState(STATE_SELECTION);
 }
 
@@ -388,6 +392,29 @@ unsigned long StateMachine::getPhaseRemainingTime() const {
 
 bool StateMachine::isTimerActive() const {
     return currentState == STATE_WASHING;
+}
+
+uint16_t StateMachine::getTotalProgramTime() const {
+    // Calcular tiempo total del programa basado en configuración
+    uint16_t totalSeconds = 0;
+
+    for (uint8_t i = 0; i < config.totalProcesses; i++) {
+        // Tiempo de lavado (configurado en minutos)
+        totalSeconds += config.time[i] * 60;
+
+        // Tiempo de drenaje
+        totalSeconds += Timing::DRAIN_TIME_SEC;
+
+        // Tiempo de centrifugado (si está habilitado)
+        if (config.centrifugeEnabled[i]) {
+            totalSeconds += Timing::CENTRIFUGE_TIME_SEC;
+        }
+    }
+
+    // Tiempo de enfriamiento (una sola vez al final)
+    totalSeconds += Timing::COOLING_TIME_SEC;
+
+    return totalSeconds;
 }
 
 unsigned long StateMachine::getTotalElapsedTime() const {

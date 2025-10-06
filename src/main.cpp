@@ -553,7 +553,8 @@ void updateUI() {
         uint16_t phaseTime = stateMachine.isTimerActive()
             ? stateMachine.getPhaseRemainingTime() / 1000
             : 0;
-        uint16_t totalTime = stateMachine.getTotalElapsedTime() / 1000;
+        // Tiempo total del programa (valor fijo calculado, no cambia durante ejecución)
+        uint16_t totalTime = stateMachine.getTotalProgramTime();
 
         nextion.updateExecutionDisplay(
             config.programNumber,

@@ -64,6 +64,7 @@ public:
     unsigned long getPhaseElapsedTime() const;
     unsigned long getPhaseRemainingTime() const;  // Tiempo restante en fase de lavado (cuenta regresiva)
     unsigned long getTotalElapsedTime() const;
+    uint16_t getTotalProgramTime() const;  // Tiempo total del programa en segundos (valor fijo calculado)
     bool isTimerActive() const;  // true si está en fase de lavado
 
 private:
