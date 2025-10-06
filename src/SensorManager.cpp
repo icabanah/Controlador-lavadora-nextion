@@ -63,17 +63,12 @@ void SensorManager::begin() {
 // ========================================
 
 void SensorManager::update() {
-    unsigned long now = millis();
-
     // Temperatura: Llamar SIEMPRE (es asíncrona, no bloquea)
     // Esto permite verificar constantemente si la conversión terminó
     readTemperature();
 
-    // Leer presión cada intervalo
-    if (now - lastPressureRead >= Timing::SENSOR_READ_INTERVAL_MS) {
-        readPressure();
-        lastPressureRead = now;
-    }
+    // Presión: También asíncrona, verifica intervalo internamente
+    readPressure();
 }
 
 // ========================================
@@ -147,11 +142,19 @@ void SensorManager::readTemperature() {
 }
 
 void SensorManager::readPressure() {
+    // OPTIMIZACIÓN: Verificar is_ready() es muy rápido, pero leer puede tardar
+    // Solo leer si realmente pasó el intervalo completo desde última lectura
+    unsigned long now = millis();
+    if (now - lastPressureRead < Timing::SENSOR_READ_INTERVAL_MS) {
+        return;  // Salir rápido si no es momento de leer
+    }
+
     if (pressureSensor.is_ready()) {
         // Leer solo con pascal() (como código anterior)
         float pressurePascal = pressureSensor.pascal();
         currentPressure = (long)pressurePascal;
         currentWaterLevel = calculateWaterLevel(currentPressure);
+        lastPressureRead = now;  // Actualizar timestamp aquí
 
         // Debug deshabilitado (ralentiza el sistema)
         // Serial.printf("[SENSOR] Presion: %.2f Pa → Nivel: %d\n",
