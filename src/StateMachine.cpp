@@ -58,6 +58,7 @@ StateMachine::StateMachine()
       programStartTime(0),
       pauseStartTime(0),
       totalPausedTime(0),
+      pausedPhaseElapsedTime(0),
       tempControlState(TEMP_IDLE),
       tempControlStartTime(0) {}
 
@@ -132,7 +133,14 @@ void StateMachine::startProgram() {
 void StateMachine::pauseProgram() {
     if (currentState >= STATE_FILLING && currentState <= STATE_COOLING) {
         pauseStartTime = millis();
-        setState(STATE_PAUSED);
+
+        // Guardar tiempo transcurrido de la fase actual
+        pausedPhaseElapsedTime = millis() - phaseStartTime;
+
+        // Guardar estado actual ANTES de cambiar a PAUSED
+        previousState = currentState;
+        currentState = STATE_PAUSED;
+        stateStartTime = millis();
 
         // Detener completamente el programa
         hardware.stopMotor();           // Detener motor (izquierda/derecha)
@@ -146,7 +154,17 @@ void StateMachine::pauseProgram() {
 void StateMachine::resumeProgram() {
     if (currentState == STATE_PAUSED) {
         totalPausedTime += millis() - pauseStartTime;
-        setState(previousState);
+
+        // Restaurar estado anterior
+        currentState = previousState;
+        stateStartTime = millis();
+
+        // Restaurar phaseStartTime ajustando por el tiempo ya transcurrido
+        // phaseStartTime debe ser "ahora - tiempo_transcurrido"
+        phaseStartTime = millis() - pausedPhaseElapsedTime;
+
+        // Resetear tiempo pausado de fase
+        pausedPhaseElapsedTime = 0;
     }
 }
 
@@ -282,27 +300,34 @@ void StateMachine::updateSpinning() {
 
         if (millis() - phaseStartTime >= Timing::CENTRIFUGE_TIME_SEC * 1000UL) {
             hardware.stopCentrifuge();
-            nextPhase();
+
+            // Verificar si es el último proceso
+            if (isLastProcess()) {
+                // Último proceso: ir a enfriamiento
+                nextPhase();  // PHASE_COOLING
+            } else {
+                // No es el último: ir al siguiente proceso (sin enfriamiento)
+                nextProcess();
+            }
         }
     } else {
         // Saltar centrifugado
-        nextPhase();
+        // Verificar si es el último proceso
+        if (isLastProcess()) {
+            nextPhase();  // PHASE_COOLING
+        } else {
+            nextProcess();
+        }
     }
 }
 
 void StateMachine::updateCooling() {
     if (millis() - phaseStartTime >= Timing::COOLING_TIME_SEC * 1000UL) {
-        // Abrir puerta siempre al finalizar el enfriamiento
+        // Abrir puerta al finalizar el enfriamiento
         hardware.unlockDoor();
 
-        // Si es el último proceso, finalizar
-        if (isLastProcess()) {
-            setState(STATE_COMPLETED);
-        } else {
-            // Siguiente proceso (cerrar puerta nuevamente)
-            hardware.lockDoor();
-            nextProcess();
-        }
+        // El enfriamiento SOLO ocurre al final de todos los procesos
+        setState(STATE_COMPLETED);
     }
 }
 

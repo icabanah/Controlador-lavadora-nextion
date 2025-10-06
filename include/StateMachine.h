@@ -78,6 +78,7 @@ private:
     unsigned long programStartTime;
     unsigned long pauseStartTime;
     unsigned long totalPausedTime;
+    unsigned long pausedPhaseElapsedTime;  // Tiempo transcurrido de la fase al pausar
 
     // Sub-estado para control de temperatura
     enum TempControlState {

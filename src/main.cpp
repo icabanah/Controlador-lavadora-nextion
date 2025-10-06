@@ -347,7 +347,16 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
             case NextionConfig::BTN_STOP:
                 stateMachine.stopProgram();
                 sensors.stopMonitoring();  // DESACTIVAR sensores al detener
+
+                // Seleccionar programa por defecto (P22)
+                stateMachine.selectProgram(PROGRAM_22);
+                if (!storage.loadProgram(22, stateMachine.getConfig())) {
+                    stateMachine.getConfig().setDefaults(PROGRAM_22);
+                }
+
                 nextion.showSelection();
+                updateProgramButtons(22);  // Resaltar botón P22
+                nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
         }
     }
@@ -525,7 +534,16 @@ void updateUI() {
             case STATE_COMPLETED:
                 Serial.println("UI: Programa completado");
                 sensors.stopMonitoring();  // DESACTIVAR sensores al completar
+
+                // Seleccionar programa por defecto (P22)
+                stateMachine.selectProgram(PROGRAM_22);
+                if (!storage.loadProgram(22, stateMachine.getConfig())) {
+                    stateMachine.getConfig().setDefaults(PROGRAM_22);
+                }
+
                 nextion.showSelection();
+                updateProgramButtons(22);  // Resaltar botón P22
+                nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
 
             case STATE_ERROR:
