@@ -157,8 +157,33 @@ printh 65 01 01 01
 
 **Página 2 (Ejecución):**
 
-- btnPausar: ID=21
+- btnPausar: ID=21 (cambia a "Reiniciar" cuando está pausado)
 - btnParar: ID=22
+
+### Comportamiento de Página de Ejecución
+
+**Temporizador:**
+- El temporizador **solo comienza** cuando se alcanza el nivel de agua seteado (fase de lavado)
+- Muestra cuenta regresiva (tiempo restante) solo durante la fase de lavado
+- En otras fases (llenado, drenaje, centrifugado, enfriamiento) muestra 0
+
+**Botón Pausa/Reiniciar:**
+- **Pausar**: Detiene completamente el programa
+  - Motor izquierda/derecha: detenido
+  - Válvulas de agua: cerradas
+  - Drenaje: cerrado
+  - Centrifugado: detenido
+  - Puerta: permanece cerrada (bloqueada)
+  - Botón cambia texto a "Reiniciar"
+- **Reiniciar**: Reanuda el programa desde donde quedó
+  - Restaura el estado anterior
+  - Botón cambia texto a "Pausar"
+
+**Control de Puerta:**
+- Se cierra (bloquea) al iniciar el programa
+- Permanece cerrada durante todas las fases, incluso en pausa
+- Se abre **solo al finalizar la fase de enfriamiento**
+- En Programa 24 (multiproceso): se abre solo al terminar el último proceso
 
 ## 🚫 REGLAS IMPORTANTES DE CÓDIGO
 

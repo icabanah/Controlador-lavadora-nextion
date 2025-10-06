@@ -83,8 +83,6 @@ void enterEditMode() {
     editState.currentTanda = 0;
     editState.currentParam = PARAM_NIVEL;
     editState.editingValue = false;
-
-    Serial.println("=== Entrando a modo edición ===");
 }
 
 void updateEditDisplay() {
@@ -335,8 +333,12 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
         switch (componentId) {
             case NextionConfig::BTN_PAUSE:
                 if (stateMachine.getState() == STATE_PAUSED) {
+                    // Cambiar texto del botón a "Pausar"
+                    nextion.setText("btnPausar", "Pausar");
                     stateMachine.resumeProgram();
                 } else {
+                    // Cambiar texto del botón a "Reiniciar"
+                    nextion.setText("btnPausar", "Reiniciar");
                     stateMachine.pauseProgram();
                 }
                 break;
@@ -418,12 +420,12 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
             // Botones de navegación de parámetros
             case NextionConfig::BTN_PARAM_NEXT:
                 nextParameter();
-                Serial.println("[EDIT] Siguiente parámetro");
+                // Serial.println("[EDIT] Siguiente parámetro");
                 break;
 
             case NextionConfig::BTN_PARAM_PREV:
                 prevParameter();
-                Serial.println("[EDIT] Parámetro anterior");
+                // Serial.println("[EDIT] Parámetro anterior");
                 break;
 
             // Botones de incremento/decremento
@@ -437,13 +439,13 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
 
             // Botón Guardar (doble clic: primero guarda, segundo sale)
             case NextionConfig::BTN_SAVE:
-                Serial.println("[EDIT] ========== BOTÓN GUARDAR PRESIONADO ==========");
+                // Serial.println("[EDIT] ========== BOTÓN GUARDAR PRESIONADO ==========");
                 if (!editState.editingValue) {
                     // Primera vez: guardar configuración en memoria persistente
                     editState.editingValue = true;
                     Serial.printf("[EDIT] Guardando programa %d...\n", config.programNumber);
                     storage.saveProgram(config.programNumber, config);
-                    Serial.println("[EDIT] Configuración guardada en memoria");
+                    // Serial.println("[EDIT] Configuración guardada en memoria");
                 } else {
                     // Segunda vez: salir a página de selección
                     editState.editingValue = false;
@@ -495,14 +497,14 @@ void updateUI() {
         switch (state) {
             case STATE_WELCOME:
                 nextion.showWelcome();
-                Serial.println("UI: Mostrando página de bienvenida");
+                // Serial.println("UI: Mostrando página de bienvenida");
                 break;
 
             case STATE_SELECTION:
                 nextion.showSelection();
                 updateProgramButtons(config.programNumber);  // Resaltar programa actual
                 nextion.updateSelectionDisplay(config);
-                Serial.println("UI: Mostrando página de selección");
+                // Serial.println("UI: Mostrando página de selección");
                 break;
 
             case STATE_FILLING:
@@ -511,7 +513,7 @@ void updateUI() {
             case STATE_SPINNING:
             case STATE_COOLING:
                 nextion.showExecution();
-                Serial.println("UI: Mostrando página de ejecución");
+                // Serial.println("UI: Mostrando página de ejecución");
                 break;
 
             case STATE_PAUSED:
@@ -547,7 +549,10 @@ void updateUI() {
 
     // Actualizar página de ejecución si estamos en proceso
     if (state >= STATE_FILLING && state <= STATE_COOLING) {
-        uint16_t phaseTime = stateMachine.getPhaseElapsedTime() / 1000;
+        // Mostrar tiempo restante si está en fase de lavado, sino 0
+        uint16_t phaseTime = stateMachine.isTimerActive()
+            ? stateMachine.getPhaseRemainingTime() / 1000
+            : 0;
         uint16_t totalTime = stateMachine.getTotalElapsedTime() / 1000;
 
         nextion.updateExecutionDisplay(
@@ -574,10 +579,6 @@ void setup() {
 
     // Esperar a que se conecte el monitor serial (5 segundos)
     delay(5000);
-
-    Serial.println("\n\n========================================");
-    Serial.println("Controlador de Lavadora - ESP32");
-    Serial.println("========================================\n");
 
     // Inicializar almacenamiento persistente
     Serial.println("Inicializando almacenamiento...");

@@ -133,9 +133,13 @@ void StateMachine::pauseProgram() {
     if (currentState >= STATE_FILLING && currentState <= STATE_COOLING) {
         pauseStartTime = millis();
         setState(STATE_PAUSED);
-        hardware.stopMotor();
-        hardware.stopCentrifuge();
-        hardware.closeWaterValves();
+
+        // Detener completamente el programa
+        hardware.stopMotor();           // Detener motor (izquierda/derecha)
+        hardware.stopCentrifuge();      // Detener centrifugado
+        hardware.closeWaterValves();    // Cerrar válvulas de llenado
+        hardware.closeDrain();          // Cerrar drenaje
+        // Nota: La puerta permanece cerrada (bloqueada)
     }
 }
 
@@ -284,12 +288,15 @@ void StateMachine::updateSpinning() {
 
 void StateMachine::updateCooling() {
     if (millis() - phaseStartTime >= Timing::COOLING_TIME_SEC * 1000UL) {
+        // Abrir puerta siempre al finalizar el enfriamiento
+        hardware.unlockDoor();
+
         // Si es el último proceso, finalizar
         if (isLastProcess()) {
-            hardware.unlockDoor();  // Abrir puerta al final
             setState(STATE_COMPLETED);
         } else {
-            // Siguiente proceso
+            // Siguiente proceso (cerrar puerta nuevamente)
+            hardware.lockDoor();
             nextProcess();
         }
     }
@@ -360,6 +367,27 @@ bool StateMachine::isLastProcess() const {
 
 unsigned long StateMachine::getPhaseElapsedTime() const {
     return millis() - phaseStartTime;
+}
+
+unsigned long StateMachine::getPhaseRemainingTime() const {
+    // Solo en fase de lavado se cuenta el tiempo
+    if (currentState != STATE_WASHING) {
+        return 0;
+    }
+
+    uint8_t proc = config.currentProcess;
+    unsigned long targetTime = config.time[proc] * 60000UL;  // Convertir minutos a ms
+    unsigned long elapsed = getPhaseElapsedTime();
+
+    if (elapsed >= targetTime) {
+        return 0;
+    }
+
+    return targetTime - elapsed;
+}
+
+bool StateMachine::isTimerActive() const {
+    return currentState == STATE_WASHING;
 }
 
 unsigned long StateMachine::getTotalElapsedTime() const {

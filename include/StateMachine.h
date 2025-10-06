@@ -62,7 +62,9 @@ public:
 
     // Info de tiempo
     unsigned long getPhaseElapsedTime() const;
+    unsigned long getPhaseRemainingTime() const;  // Tiempo restante en fase de lavado (cuenta regresiva)
     unsigned long getTotalElapsedTime() const;
+    bool isTimerActive() const;  // true si está en fase de lavado
 
 private:
     SystemState currentState;

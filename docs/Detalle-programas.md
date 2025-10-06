@@ -18,6 +18,7 @@
   - Si temperatura > objetivo + 2°C: drena agua parcialmente y rellena con agua fría.
   - Si temperatura < objetivo - 2°C: drena agua parcialmente y rellena con agua caliente.
 - **Comentarios**:
+  - En la pagina de ejecucion el temporizador no comienza a contar hasta que el nivel del agua llegue al nivel seteado. Es decir, a partir de la fase de lavado. 
   - Drenaje se cierra al comienzo del programa y solo se abre al inicio de la fase "FASE_DRENAJE" y permanece abierto hasta que se inicie otro programa.
   - La puerta se cierra al comienzo del programa y solo se abre al final de la fase "FASE_ENFRIAMIENTO" y permanece abierto hasta que se inicie otro programa.
 - **Fases**:
@@ -32,6 +33,7 @@
 - **Tipo de Agua**: Solo agua fría (no configurable)
 - **Control de Temperatura**: No (sensor solo informativo)
 - **Comentarios**:
+  - En la pagina de ejecucion el temporizador no comienza a contar hasta que el nivel del agua llegue al nivel seteado. Es decir, a partir de la fase de lavado. 
   - Drenaje se cierra al comienzo del programa y solo se abre al inicio de la fase "FASE_DRENAJE" y permanece abierto hasta que se inicie otro programa.
   - La puerta se cierra al comienzo del programa y solo se abre al final de la fase "FASE_ENFRIAMIENTO" y permanece abierto hasta que se inicie otro programa.
 - **Fases**:
@@ -48,6 +50,7 @@
   - Sí, agua caliente: igual que Programa 22
   - No, agua fría: sin control (como Programa 23)
 - **Comentarios**:
+  - En la pagina de ejecucion el temporizador no comienza a contar hasta que el nivel del agua llegue al nivel seteado. Es decir, a partir de la fase de lavado. 
   - El programa 24 consta de 4 procesos. Y cada proceso de sus fases.
   - Drenaje se cierra al comienzo del programa y solo se abre al inicio de la fase "FASE_DRENAJE" y permanece abierto hasta que se inicie otro proceso. Al inicio de la fase de llenado de cada proceso.
   - La puerta se cierra al comienzo del programa y solo se abre al final de la fase "FASE_ENFRIAMIENTO" y permanece abierto hasta que se inicie otro programa. Es decir, se abre al terminar el programa 24, nunca entre fases.
