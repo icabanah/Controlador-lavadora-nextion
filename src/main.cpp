@@ -518,10 +518,7 @@ void updateUI() {
         switch (state) {
             case STATE_WELCOME:
                 nextion.showWelcome();
-                // --- Personalizar textos de la página de bienvenida ---
-                nextion.setText("lbl_titulo", "Lavadora");
-                nextion.setText("lbl_subtitulo", "Modelo X-2000");
-                nextion.setText("lbl_contacto", "Soporte: itrebolsoft.com");
+                // Los textos de bienvenida se configuran en setup()
                 // Serial.println("UI: Mostrando página de bienvenida");
                 break;
 
@@ -595,16 +592,22 @@ void updateUI() {
         // Tiempo total del programa (valor fijo calculado, no cambia durante ejecución)
         uint16_t totalTime = stateMachine.getTotalProgramTime();
 
+        // Durante el reposo, mostrar la tanda siguiente (hacia la que vamos)
+        uint8_t displayProcess = config.currentProcess;
+        if (state == STATE_RESTING) {
+            displayProcess = config.currentProcess + 1;  // Mostrar tanda siguiente
+        }
+
         nextion.updateExecutionDisplay(
             config.programNumber,
             config.currentPhase,
-            config.currentProcess,
+            displayProcess,
             phaseTime,
             totalTime,
             sensors.getTemperature(),
             sensors.getWaterLevel(),
-            config.centrifugeEnabled[config.currentProcess],
-            config.waterType[config.currentProcess]
+            config.centrifugeEnabled[displayProcess],
+            config.waterType[displayProcess]
         );
 
         // Parpadeo del temporizador cuando está pausado (alternar visibilidad)
@@ -646,6 +649,12 @@ void setup() {
     // Serial.println("Inicializando pantalla Nextion...");
     nextion.begin();
     nextion.setButtonCallback(handleNextionEvent);
+
+    // Configurar textos de la página de bienvenida (antes de mostrarla)
+    delay(100);  // Pequeño delay para asegurar que Nextion esté listo
+    nextion.setText("lbl_titulo", "Lavadora");
+    nextion.setText("lbl_subtitulo", "Modelo X-2000");
+    nextion.setText("lbl_contacto", "Soporte: itrebolsoft.com");
 
     // Serial.println("Inicializando máquina de estados...");
     stateMachine.begin();
