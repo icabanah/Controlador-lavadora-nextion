@@ -317,6 +317,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
 
             case NextionConfig::BTN_START:
                 stateMachine.startProgram();
+                sensors.startMonitoring();  // ACTIVAR sensores al iniciar programa
                 nextion.showExecution();
                 break;
 
@@ -345,6 +346,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
 
             case NextionConfig::BTN_STOP:
                 stateMachine.stopProgram();
+                sensors.stopMonitoring();  // DESACTIVAR sensores al detener
                 nextion.showSelection();
                 break;
         }
@@ -522,15 +524,18 @@ void updateUI() {
 
             case STATE_COMPLETED:
                 Serial.println("UI: Programa completado");
+                sensors.stopMonitoring();  // DESACTIVAR sensores al completar
                 nextion.showSelection();
                 break;
 
             case STATE_ERROR:
+                sensors.stopMonitoring();  // DESACTIVAR sensores en error
                 nextion.showError("Error del sistema");
                 Serial.println("UI: Mostrando página de error");
                 break;
 
             case STATE_EMERGENCY:
+                sensors.stopMonitoring();  // DESACTIVAR sensores en emergencia
                 nextion.showEmergency();
                 Serial.println("UI: EMERGENCIA ACTIVADA");
                 break;

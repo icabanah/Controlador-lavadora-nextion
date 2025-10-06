@@ -1,7 +1,8 @@
 #include "SensorManager.h"
 
 SensorManager::SensorManager()
-    : oneWire(HardwarePins::TEMPERATURE),
+    : monitoringActive(false),
+      oneWire(HardwarePins::TEMPERATURE),
       tempSensor(&oneWire),
       tempSensorFound(false),
       currentTemperature(0.0),
@@ -63,12 +64,32 @@ void SensorManager::begin() {
 // ========================================
 
 void SensorManager::update() {
+    // Solo actualizar si el monitoreo está activo
+    if (!monitoringActive) {
+        return;
+    }
+
     // Temperatura: Llamar SIEMPRE (es asíncrona, no bloquea)
     // Esto permite verificar constantemente si la conversión terminó
     readTemperature();
 
     // Presión: También asíncrona, verifica intervalo internamente
     readPressure();
+}
+
+// ========================================
+// Control de monitoreo
+// ========================================
+
+void SensorManager::startMonitoring() {
+    monitoringActive = true;
+    Serial.println("[SENSOR] Monitoreo ACTIVADO");
+}
+
+void SensorManager::stopMonitoring() {
+    monitoringActive = false;
+    tempConversionInProgress = false;  // Cancelar conversión en progreso
+    Serial.println("[SENSOR] Monitoreo DESACTIVADO");
 }
 
 // ========================================

@@ -14,6 +14,11 @@ public:
     void begin();
     void update();
 
+    // Control de monitoreo (activar/desactivar sensores)
+    void startMonitoring();
+    void stopMonitoring();
+    bool isMonitoring() const { return monitoringActive; }
+
     // Lectura de temperatura
     float getTemperature() const { return currentTemperature; }
     bool isTemperatureReady() const { return temperatureValid; }
@@ -32,6 +37,9 @@ public:
     void forceRead();
 
 private:
+    // Control de monitoreo
+    bool monitoringActive;
+
     // Sensor de temperatura
     OneWire oneWire;
     DallasTemperature tempSensor;
