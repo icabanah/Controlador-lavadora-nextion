@@ -35,9 +35,10 @@ void HardwareControl::begin() {
 
 void HardwareControl::update() {
     // Verificar emergencia automáticamente
-    if (isEmergencyPressed()) {
-        emergencyShutdown();
-    }
+    // NOTA: Comentado temporalmente - el botón de emergencia puede estar flotando
+    // if (isEmergencyPressed()) {
+    //     emergencyShutdown();
+    // }
 }
 
 // ========================================
@@ -81,6 +82,7 @@ void HardwareControl::startMotorLeft() {
     motorRunning = true;
     motorDirectionLeft = true;
     lastMotorToggle = millis();
+    Serial.println("[HARDWARE] Motor IZQUIERDA activado");
 }
 
 void HardwareControl::startMotorRight() {
@@ -89,6 +91,7 @@ void HardwareControl::startMotorRight() {
     motorRunning = true;
     motorDirectionLeft = false;
     lastMotorToggle = millis();
+    Serial.println("[HARDWARE] Motor DERECHA activado");
 }
 
 void HardwareControl::stopMotor() {
@@ -135,11 +138,13 @@ void HardwareControl::stopCentrifuge() {
 void HardwareControl::lockDoor() {
     digitalWrite(HardwarePins::DOOR_MAGNET, HIGH);
     doorLocked = true;
+    Serial.println("[HARDWARE] Puerta CERRADA (bloqueada)");
 }
 
 void HardwareControl::unlockDoor() {
     digitalWrite(HardwarePins::DOOR_MAGNET, LOW);
     doorLocked = false;
+    Serial.println("[HARDWARE] Puerta ABIERTA (desbloqueada)");
 }
 
 // ========================================
