@@ -89,9 +89,12 @@ void updateEditDisplay() {
     ProgramConfig& config = stateMachine.getConfig();
     uint8_t tanda = editState.currentTanda;
 
-    // Actualizar valores del panel derecho
+    // Actualizar número de programa en edición
     char buffer[32];
+        snprintf(buffer, sizeof(buffer), "P%d", config.programNumber);
+    nextion.setText("progr_sel", buffer);
 
+    // Actualizar valores del panel derecho
     snprintf(buffer, sizeof(buffer), "%d", config.waterLevel[tanda]);
     nextion.setText("val_nivel", buffer);
 
@@ -274,12 +277,12 @@ void prevParameter() {
 // ========================================
 
 void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) {
-    Serial.print("Evento Nextion - Página: ");
-    Serial.print(pageId);
-    Serial.print(", Componente: ");
-    Serial.print(componentId);
-    Serial.print(", Tipo: ");
-    Serial.println(eventType);
+    // Serial.print("Evento Nextion - Página: ");
+    // Serial.print(pageId);
+    // Serial.print(", Componente: ");
+    // Serial.print(componentId);
+    // Serial.print(", Tipo: ");
+    // Serial.println(eventType);
 
     // Página de selección
     if (pageId == NextionConfig::PAGE_SELECTION) {
@@ -453,7 +456,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 if (!editState.editingValue) {
                     // Primera vez: guardar configuración en memoria persistente
                     editState.editingValue = true;
-                    Serial.printf("[EDIT] Guardando programa %d...\n", config.programNumber);
+                    // Serial.printf("[EDIT] Guardando programa %d...\n", config.programNumber);
                     storage.saveProgram(config.programNumber, config);
                     // Serial.println("[EDIT] Configuración guardada en memoria");
                 } else {
@@ -463,7 +466,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                     nextion.showSelection();
                     updateProgramButtons(config.programNumber);  // Resaltar programa
                     nextion.updateSelectionDisplay(config);
-                    Serial.println("[EDIT] Volviendo a página de selección");
+                    // Serial.println("[EDIT] Volviendo a página de selección");
                 }
                 break;
 
@@ -475,7 +478,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 nextion.showSelection();
                 updateProgramButtons(config.programNumber);  // Resaltar programa
                 nextion.updateSelectionDisplay(config);
-                Serial.println("[EDIT] Cambios cancelados");
+                // Serial.println("[EDIT] Cambios cancelados");
                 break;
         }
     }
@@ -527,11 +530,11 @@ void updateUI() {
                 break;
 
             case STATE_PAUSED:
-                Serial.println("UI: Programa pausado");
+                // Serial.println("UI: Programa pausado");
                 break;
 
             case STATE_COMPLETED:
-                Serial.println("UI: Programa completado");
+                // Serial.println("UI: Programa completado");
                 sensors.stopMonitoring();  // DESACTIVAR sensores al completar
 
                 // Cargar programa por defecto (P22) desde storage
@@ -548,13 +551,13 @@ void updateUI() {
             case STATE_ERROR:
                 sensors.stopMonitoring();  // DESACTIVAR sensores en error
                 nextion.showError("Error del sistema");
-                Serial.println("UI: Mostrando página de error");
+                // Serial.println("UI: Mostrando página de error");
                 break;
 
             case STATE_EMERGENCY:
                 sensors.stopMonitoring();  // DESACTIVAR sensores en emergencia
                 nextion.showEmergency();
-                Serial.println("UI: EMERGENCIA ACTIVADA");
+                // Serial.println("UI: EMERGENCIA ACTIVADA");
                 break;
 
             default:
@@ -615,34 +618,34 @@ void setup() {
     delay(5000);
 
     // Inicializar almacenamiento persistente
-    Serial.println("Inicializando almacenamiento...");
+    // Serial.println("Inicializando almacenamiento...");
     storage.begin();
     storage.debugPrintAll();  // Debug: mostrar qué hay en memoria
 
     // Inicializar módulos
-    Serial.println("Inicializando hardware...");
+    // Serial.println("Inicializando hardware...");
     hardware.begin();
 
-    Serial.println("Inicializando sensores...");
+    // Serial.println("Inicializando sensores...");
     sensors.begin();
 
-    Serial.println("Inicializando pantalla Nextion...");
+    // Serial.println("Inicializando pantalla Nextion...");
     nextion.begin();
     nextion.setButtonCallback(handleNextionEvent);
 
-    Serial.println("Inicializando máquina de estados...");
+    // Serial.println("Inicializando máquina de estados...");
     stateMachine.begin();
 
     // Cargar configuración guardada del programa por defecto (P22)
-    Serial.println("Cargando configuración guardada...");
+    // Serial.println("Cargando configuración guardada...");
     if (storage.loadProgram(22, stateMachine.getConfig())) {
-        Serial.println("Configuración de P22 cargada desde memoria");
+        // Serial.println("Configuración de P22 cargada desde memoria");
     } else {
-        Serial.println("Usando configuración por defecto de P22");
+        // Serial.println("Usando configuración por defecto de P22");
     }
 
-    Serial.println("\nSistema iniciado correctamente.\n");
-    Serial.println("Esperando 3 segundos para pasar a selección...");
+    // Serial.println("\nSistema iniciado correctamente.\n");
+    // Serial.println("Esperando 3 segundos para pasar a selección...");
 }
 
 // ========================================
@@ -669,7 +672,7 @@ void loop() {
         sensors.stopMonitoring();
         nextion.showEmergency();
         wasEmergencyActive = true;
-        Serial.println("[EMERGENCY] Botón de emergencia ACTIVADO");
+        // Serial.println("[EMERGENCY] Botón de emergencia ACTIVADO");
     }
     else if (!isEmergencyActive && wasEmergencyActive) {
         // Botón de emergencia SOLTADO (flanco descendente)
@@ -684,7 +687,7 @@ void loop() {
         updateProgramButtons(22);
         nextion.updateSelectionDisplay(stateMachine.getConfig());
         wasEmergencyActive = false;
-        Serial.println("[EMERGENCY] Botón de emergencia DESACTIVADO - Sistema reseteado");
+        // Serial.println("[EMERGENCY] Botón de emergencia DESACTIVADO - Sistema reseteado");
     }
 
     // Sin delay() - el loop corre lo más rápido posible

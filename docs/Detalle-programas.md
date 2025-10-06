@@ -152,6 +152,7 @@ Botones
 
 ### Componentes de la pantalla edicion (NEXTION_PAGE_EDIT)
 
+- NEXTION_COMP_PROG_EDICION "progr_sel"          // objName en nextion del programa actual en edición
 - NEXTION_COMP_PARAM_EDITAR "param"               // objName en nextion del componente de texto que muestra el parámetro en edición
 - NEXTION_COMP_PARAM_VALOR_EDITAR "param_value"   // objName en nextion del componente de texto que muestra el valor del parámetro en edición
 - NEXTION_COMP_BTN_TANDA1 "tanda1"                // objName en nextion de componente botón tanda 1
