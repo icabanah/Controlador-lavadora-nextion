@@ -167,8 +167,8 @@ printh 65 01 01 01
   - **Solo comienza** cuando se alcanza el nivel de agua seteado (fase de lavado)
   - Durante fase de lavado: muestra cuenta regresiva del tiempo configurado
   - En otras fases (llenado, drenaje, centrifugado, enfriamiento): muestra 0
-- `tiempo_total`: Muestra tiempo **total estimado** del programa (valor fijo)
-  - Se calcula al inicio: suma de tiempos de lavado + drenaje + centrifugado (si habilitado) + enfriamiento
+- `tiempo_total`: Muestra tiempo **total del programa** (valor fijo)
+  - Es la suma de los tiempos de lavado configurados (solo lavado, no incluye llenado/drenaje/centrifugado/enfriamiento)
   - No varía durante la ejecución del programa
   - Formato: MM:SS
 

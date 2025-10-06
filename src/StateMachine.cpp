@@ -395,24 +395,13 @@ bool StateMachine::isTimerActive() const {
 }
 
 uint16_t StateMachine::getTotalProgramTime() const {
-    // Calcular tiempo total del programa basado en configuración
+    // Tiempo total = suma de todos los tiempos de lavado configurados
     uint16_t totalSeconds = 0;
 
     for (uint8_t i = 0; i < config.totalProcesses; i++) {
-        // Tiempo de lavado (configurado en minutos)
+        // Solo tiempo de lavado (configurado en minutos)
         totalSeconds += config.time[i] * 60;
-
-        // Tiempo de drenaje
-        totalSeconds += Timing::DRAIN_TIME_SEC;
-
-        // Tiempo de centrifugado (si está habilitado)
-        if (config.centrifugeEnabled[i]) {
-            totalSeconds += Timing::CENTRIFUGE_TIME_SEC;
-        }
     }
-
-    // Tiempo de enfriamiento (una sola vez al final)
-    totalSeconds += Timing::COOLING_TIME_SEC;
 
     return totalSeconds;
 }
