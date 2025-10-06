@@ -172,7 +172,7 @@ void StateMachine::stopProgram() {
     hardware.stopMotor();
     hardware.stopCentrifuge();
     hardware.closeWaterValves();
-    hardware.closeDrain();
+    hardware.openDrain();  // ABRIR drenaje al detener programa (para vaciar agua)
     hardware.unlockDoor();  // Abrir puerta al detener programa
     setState(STATE_SELECTION);
 }
