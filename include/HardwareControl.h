@@ -45,7 +45,15 @@ private:
     bool motorRunning;
     bool centrifugeActive;
     unsigned long lastMotorToggle;
-    bool motorDirectionLeft;
+
+    // Estados del motor (secuencia de 4 pasos)
+    enum MotorState : uint8_t {
+        MOTOR_RIGHT_ACTIVE = 0,   // Derecha activada
+        MOTOR_PAUSE_1 = 1,         // Pausa después de derecha
+        MOTOR_LEFT_ACTIVE = 2,     // Izquierda activada
+        MOTOR_PAUSE_2 = 3          // Pausa después de izquierda
+    };
+    MotorState motorState;
 
     // Configuración de alternancia del motor
     static constexpr uint16_t MOTOR_TOGGLE_INTERVAL_MS = 5000;  // Cambia cada 5 segundos

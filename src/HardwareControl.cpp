@@ -6,7 +6,7 @@ HardwareControl::HardwareControl()
       motorRunning(false),
       centrifugeActive(false),
       lastMotorToggle(0),
-      motorDirectionLeft(true) {}
+      motorState(MOTOR_RIGHT_ACTIVE) {}
 
 // ========================================
 // Inicialización
@@ -79,7 +79,7 @@ void HardwareControl::startMotorLeft() {
     digitalWrite(HardwarePins::MOTOR_DIR_RIGHT, LOW);
     digitalWrite(HardwarePins::MOTOR_DIR_LEFT, HIGH);
     motorRunning = true;
-    motorDirectionLeft = true;
+    motorState = MOTOR_LEFT_ACTIVE;
     lastMotorToggle = millis();
     Serial.println("[HARDWARE] Motor IZQUIERDA activado");
 }
@@ -88,7 +88,7 @@ void HardwareControl::startMotorRight() {
     digitalWrite(HardwarePins::MOTOR_DIR_LEFT, LOW);
     digitalWrite(HardwarePins::MOTOR_DIR_RIGHT, HIGH);
     motorRunning = true;
-    motorDirectionLeft = false;
+    motorState = MOTOR_RIGHT_ACTIVE;
     lastMotorToggle = millis();
     Serial.println("[HARDWARE] Motor DERECHA activado");
 }
@@ -101,16 +101,47 @@ void HardwareControl::stopMotor() {
 
 void HardwareControl::toggleMotorDirection() {
     if (!motorRunning) {
-        startMotorLeft();
+        // Primera vez: iniciar con motor a la derecha
+        startMotorRight();
         return;
     }
 
-    // Alternar cada cierto tiempo
+    // Alternar cada cierto tiempo entre los 4 estados
     if (millis() - lastMotorToggle >= MOTOR_TOGGLE_INTERVAL_MS) {
-        if (motorDirectionLeft) {
-            startMotorRight();
-        } else {
-            startMotorLeft();
+        lastMotorToggle = millis();
+
+        switch (motorState) {
+            case MOTOR_RIGHT_ACTIVE:
+                // Estado 1 → Estado 2: Apagar todo (pausa)
+                digitalWrite(HardwarePins::MOTOR_DIR_LEFT, LOW);
+                digitalWrite(HardwarePins::MOTOR_DIR_RIGHT, LOW);
+                motorState = MOTOR_PAUSE_1;
+                Serial.println("[HARDWARE] Motor PAUSA (después de derecha)");
+                break;
+
+            case MOTOR_PAUSE_1:
+                // Estado 2 → Estado 3: Activar izquierda
+                digitalWrite(HardwarePins::MOTOR_DIR_RIGHT, LOW);
+                digitalWrite(HardwarePins::MOTOR_DIR_LEFT, HIGH);
+                motorState = MOTOR_LEFT_ACTIVE;
+                Serial.println("[HARDWARE] Motor IZQUIERDA activado");
+                break;
+
+            case MOTOR_LEFT_ACTIVE:
+                // Estado 3 → Estado 4: Apagar todo (pausa)
+                digitalWrite(HardwarePins::MOTOR_DIR_LEFT, LOW);
+                digitalWrite(HardwarePins::MOTOR_DIR_RIGHT, LOW);
+                motorState = MOTOR_PAUSE_2;
+                Serial.println("[HARDWARE] Motor PAUSA (después de izquierda)");
+                break;
+
+            case MOTOR_PAUSE_2:
+                // Estado 4 → Estado 1: Activar derecha (reiniciar ciclo)
+                digitalWrite(HardwarePins::MOTOR_DIR_LEFT, LOW);
+                digitalWrite(HardwarePins::MOTOR_DIR_RIGHT, HIGH);
+                motorState = MOTOR_RIGHT_ACTIVE;
+                Serial.println("[HARDWARE] Motor DERECHA activado");
+                break;
         }
     }
 }
