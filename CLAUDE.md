@@ -493,6 +493,38 @@ void setup() {
 - Verificar `HardwareControl::toggleMotorDirection()` se llama en loop
 - Ajustar `MOTOR_TOGGLE_INTERVAL_MS` en [HardwareControl.h](include/HardwareControl.h)
 
+## 📋 Página de Selección
+
+### Resaltado de Botones de Programa
+
+Los botones de programa (P22, P23, P24) cambian de color para indicar cuál está seleccionado.
+
+**Función `updateProgramButtons()` ([main.cpp:49-72](src/main.cpp)):**
+
+```cpp
+void updateProgramButtons(uint8_t selectedProgram) {
+    for (int i = 0; i < 3; i++) {
+        char btnName[16];
+        snprintf(btnName, sizeof(btnName), "btnPrograma%d", i + 1);
+
+        if (programNumbers[i] == selectedProgram) {
+            nextion.setBackgroundColor(btnName, COLOR_ACTIVE);    // Verde
+        } else {
+            nextion.setBackgroundColor(btnName, COLOR_INACTIVE);  // Gris claro
+        }
+    }
+}
+```
+
+**Cuándo se actualiza:**
+- Al presionar botón de programa (líneas 296, 306, 316)
+- Al entrar a página de selección (línea 499)
+- Al salir de página de edición (líneas 450, 462)
+
+**Resultado Visual:**
+- Programa seleccionado: Color verde (COLOR_ACTIVE = 1024)
+- Programas no seleccionados: Color gris claro (COLOR_INACTIVE = 50712)
+
 ## 🎛️ Página de Edición
 
 ### Funcionalidad Implementada

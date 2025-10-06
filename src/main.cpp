@@ -43,6 +43,35 @@ struct EditState {
 } editState;
 
 // ========================================
+// FUNCIONES DE SELECCIÓN
+// ========================================
+
+void updateProgramButtons(uint8_t selectedProgram) {
+    // IDs de botones de programa
+    const uint8_t programIds[3] = {
+        NextionConfig::BTN_PROGRAM1,  // ID 1
+        NextionConfig::BTN_PROGRAM2,  // ID 2
+        NextionConfig::BTN_PROGRAM3   // ID 3
+    };
+
+    const uint8_t programNumbers[3] = {22, 23, 24};
+
+    // Actualizar cada botón
+    for (int i = 0; i < 3; i++) {
+        char btnName[16];
+        snprintf(btnName, sizeof(btnName), "btnPrograma%d", i + 1);
+
+        if (programNumbers[i] == selectedProgram) {
+            // Botón seleccionado: color activo
+            nextion.setBackgroundColor(btnName, NextionConfig::COLOR_ACTIVE);
+        } else {
+            // Botón no seleccionado: color inactivo
+            nextion.setBackgroundColor(btnName, NextionConfig::COLOR_INACTIVE);
+        }
+    }
+}
+
+// ========================================
 // FUNCIONES DE EDICIÓN
 // ========================================
 
@@ -264,6 +293,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                     // Si no existe, usar valores por defecto
                     stateMachine.getConfig().setDefaults(PROGRAM_22);
                 }
+                updateProgramButtons(22);  // Resaltar botón seleccionado
                 nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
 
@@ -273,6 +303,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 if (!storage.loadProgram(23, stateMachine.getConfig())) {
                     stateMachine.getConfig().setDefaults(PROGRAM_23);
                 }
+                updateProgramButtons(23);  // Resaltar botón seleccionado
                 nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
 
@@ -282,6 +313,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 if (!storage.loadProgram(24, stateMachine.getConfig())) {
                     stateMachine.getConfig().setDefaults(PROGRAM_24);
                 }
+                updateProgramButtons(24);  // Resaltar botón seleccionado
                 nextion.updateSelectionDisplay(stateMachine.getConfig());
                 break;
 
@@ -415,6 +447,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                     editState.editingValue = false;
                     stateMachine.setState(STATE_SELECTION);
                     nextion.showSelection();
+                    updateProgramButtons(config.programNumber);  // Resaltar programa
                     nextion.updateSelectionDisplay(config);
                     Serial.println("[EDIT] Volviendo a página de selección");
                 }
@@ -426,6 +459,7 @@ void handleNextionEvent(uint8_t pageId, uint8_t componentId, uint8_t eventType) 
                 editState.editingValue = false;
                 stateMachine.setState(STATE_SELECTION);
                 nextion.showSelection();
+                updateProgramButtons(config.programNumber);  // Resaltar programa
                 nextion.updateSelectionDisplay(config);
                 Serial.println("[EDIT] Cambios cancelados");
                 break;
@@ -464,6 +498,7 @@ void updateUI() {
 
             case STATE_SELECTION:
                 nextion.showSelection();
+                updateProgramButtons(config.programNumber);  // Resaltar programa actual
                 nextion.updateSelectionDisplay(config);
                 Serial.println("UI: Mostrando página de selección");
                 break;
