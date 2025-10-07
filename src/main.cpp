@@ -592,11 +592,9 @@ void updateUI() {
         // Tiempo total del programa (valor fijo calculado, no cambia durante ejecución)
         uint16_t totalTime = stateMachine.getTotalProgramTime();
 
-        // Durante el reposo, mostrar la tanda siguiente (hacia la que vamos)
+        // Durante el reposo, mostrar la tanda que acaba de terminar
+        // (currentProcess ya está apuntando a la tanda actual/que terminó)
         uint8_t displayProcess = config.currentProcess;
-        if (state == STATE_RESTING) {
-            displayProcess = config.currentProcess + 1;  // Mostrar tanda siguiente
-        }
 
         nextion.updateExecutionDisplay(
             config.programNumber,
