@@ -52,8 +52,6 @@ void SensorManager::begin() {
                 Serial.print(SensorConfig::TEMP_SENSOR_ADDR[i], HEX);
                 if (i < 7) Serial.print(", ");
             }
-            Serial.println("}");
-            Serial.println("*** ACTUALIZA Config.h línea 44 con la dirección detectada ***");
         } else {
             Serial.println("Dirección del sensor OK (coincide con Config.h)");
         }

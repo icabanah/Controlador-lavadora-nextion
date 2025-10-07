@@ -99,34 +99,28 @@ void NextionUI::updateSelectionDisplay(const ProgramConfig& config) {
     // Mostrar programa seleccionado
     snprintf(buffer, sizeof(buffer), "P%d", config.programNumber);
     setText("progr_sel", buffer);
-    // Serial.printf("  progr_sel = %s\n", buffer);
 
     uint8_t proc = config.currentProcess;
 
     // Nivel de agua (como texto)
     snprintf(buffer, sizeof(buffer), "%d", config.waterLevel[proc]);
     setText("val_nivel", buffer);
-    // Serial.printf("  val_nivel = %s\n", buffer);
 
     // Temperatura (como texto)
     snprintf(buffer, sizeof(buffer), "%d", config.temperature[proc]);
     setText("val_temp", buffer);
-    // Serial.printf("  val_temp = %s\n", buffer);
 
     // Tiempo (como texto)
     snprintf(buffer, sizeof(buffer), "%d", config.time[proc]);
     setText("val_tiempo", buffer);
-    // Serial.printf("  val_tiempo = %s\n", buffer);
 
     // Centrifugado
     const char* centrif = config.centrifugeEnabled[proc] ? "Si" : "No";
     setText("val_centrif", centrif);
-    // Serial.printf("  val_centrif = %s\n", centrif);
 
     // Tipo de agua
     const char* agua = getWaterTypeText(config.waterType[proc]);
     setText("val_agua", agua);
-    // Serial.printf("  val_agua = %s\n", agua);
 }
 
 void NextionUI::updateExecutionDisplay(

@@ -651,10 +651,10 @@ void setup() {
     nextion.setButtonCallback(handleNextionEvent);
 
     // Configurar textos de la página de bienvenida (antes de mostrarla)
-    delay(100);  // Pequeño delay para asegurar que Nextion esté listo
-    nextion.setText("lbl_titulo", "Lavadora");
-    nextion.setText("lbl_subtitulo", "Modelo X-2000");
-    nextion.setText("lbl_contacto", "Soporte: itrebolsoft.com");
+    // delay(100);  // Pequeño delay para asegurar que Nextion esté listo
+    // nextion.setText("lbl_titulo", "Lavadora");
+    // nextion.setText("lbl_subtitulo", "Modelo X-2000");
+    // nextion.setText("lbl_contacto", "Soporte: itrebolsoft.com");
 
     // Serial.println("Inicializando máquina de estados...");
     stateMachine.begin();
@@ -667,7 +667,6 @@ void setup() {
         // Serial.println("Usando configuración por defecto de P22");
     }
 
-    // Serial.println("\nSistema iniciado correctamente.\n");
     // Serial.println("Esperando 3 segundos para pasar a selección...");
 }
 
