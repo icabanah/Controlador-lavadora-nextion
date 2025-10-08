@@ -119,8 +119,23 @@ void HardwareControl::toggleMotorDirection() {
         return;
     }
 
-    // Alternar cada cierto tiempo entre los 4 estados
-    if (millis() - lastMotorToggle >= MOTOR_TOGGLE_INTERVAL_MS) {
+    // Determinar tiempo de espera según el estado actual
+    uint16_t waitTime = 0;
+    switch (motorState) {
+        case MOTOR_RIGHT_ACTIVE:
+            waitTime = MOTOR_RIGHT_TIME_MS;  // Esperar tiempo de giro derecha
+            break;
+        case MOTOR_PAUSE_1:
+        case MOTOR_PAUSE_2:
+            waitTime = MOTOR_PAUSE_TIME_MS;  // Esperar tiempo de pausa
+            break;
+        case MOTOR_LEFT_ACTIVE:
+            waitTime = MOTOR_LEFT_TIME_MS;   // Esperar tiempo de giro izquierda
+            break;
+    }
+
+    // Alternar cuando se cumple el tiempo correspondiente
+    if (millis() - lastMotorToggle >= waitTime) {
         lastMotorToggle = millis();
 
         switch (motorState) {

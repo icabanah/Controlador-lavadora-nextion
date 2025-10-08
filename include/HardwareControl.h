@@ -62,8 +62,10 @@ private:
     bool emergencyTriggered;             // Flag de emergencia ya activada
 
     // Configuración de tiempos
-    static constexpr uint16_t MOTOR_TOGGLE_INTERVAL_MS = 5000;  // Cambia cada 5 segundos
-    static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 200;        // Tiempo de antirrebote (100ms)
+    static constexpr uint16_t MOTOR_RIGHT_TIME_MS = 5000;   // Tiempo girando a la derecha
+    static constexpr uint16_t MOTOR_PAUSE_TIME_MS = 3000;   // Tiempo de pausa entre giros
+    static constexpr uint16_t MOTOR_LEFT_TIME_MS = 5000;    // Tiempo girando a la izquierda
+    static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 200;   // Tiempo de antirrebote
 };
 
 #endif // HARDWARE_CONTROL_H
