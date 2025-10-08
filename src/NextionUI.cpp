@@ -319,7 +319,7 @@ const char* NextionUI::getPhaseText(uint8_t phase) {
         case PHASE_WASHING:   return "Lavado";
         case PHASE_DRAINING:  return "Drenaje";
         case PHASE_SPINNING:  return "Centrifugado";
-        case PHASE_COOLING:   return "Enfriamiento";
+        case PHASE_COOLING:   return "Finalizando";
         default:              return "Desconocido";
     }
 }
