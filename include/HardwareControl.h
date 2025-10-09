@@ -62,9 +62,9 @@ private:
     bool emergencyTriggered;             // Flag de emergencia ya activada
 
     // Configuración de tiempos
-    static constexpr uint16_t MOTOR_RIGHT_TIME_MS = 5000;   // Tiempo girando a la derecha
-    static constexpr uint16_t MOTOR_PAUSE_TIME_MS = 3000;   // Tiempo de pausa entre giros
-    static constexpr uint16_t MOTOR_LEFT_TIME_MS = 5000;    // Tiempo girando a la izquierda
+    static constexpr uint16_t MOTOR_RIGHT_TIME_MS = 7000;   // Tiempo girando a la derecha
+    static constexpr uint16_t MOTOR_PAUSE_TIME_MS = 4000;   // Tiempo de pausa entre giros
+    static constexpr uint16_t MOTOR_LEFT_TIME_MS = 6000;    // Tiempo girando a la izquierda
     static constexpr uint8_t EMERGENCY_DEBOUNCE_MS = 200;   // Tiempo de antirrebote
 };
 

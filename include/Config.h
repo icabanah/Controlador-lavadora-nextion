@@ -82,10 +82,10 @@ namespace Limits
 
 namespace Timing
 {
-    constexpr uint16_t WELCOME_SCREEN_MS = 3000;      // Tiempo de bienvenida
+    constexpr uint16_t WELCOME_SCREEN_MS = 1500;      // Tiempo de bienvenida
     constexpr uint16_t DRAIN_TIME_SEC = 45;           // Tiempo de drenaje
-    constexpr uint16_t COOLING_TIME_SEC = 60;         // Tiempo de enfriamiento
-    constexpr uint16_t CENTRIFUGE_TIME_SEC = 45;      // Tiempo de centrifugado
+    constexpr uint16_t COOLING_TIME_SEC = 60;         // Tiempo de finalizacion
+    constexpr uint16_t CENTRIFUGE_TIME_SEC = 180;      // Tiempo de centrifugado
     constexpr uint16_t REST_BETWEEN_PROCESS_SEC = 10; // Tiempo de reposo entre tandas (P24)
 
     constexpr uint16_t SENSOR_READ_INTERVAL_MS = 500; // Intervalo de lectura de sensores
