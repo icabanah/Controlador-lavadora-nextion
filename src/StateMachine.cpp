@@ -301,7 +301,11 @@ void StateMachine::updatePaused() {
 }
 
 void StateMachine::updateCompleted() {
-    // Programa completado, esperando nueva selección
+    // Esperar tiempo de visualización antes de volver a selección
+    if (millis() - stateStartTime >= Timing::COMPLETION_DISPLAY_SEC * 1000UL) {
+        // Tiempo completado, volver a selección
+        setState(STATE_SELECTION);
+    }
 }
 
 void StateMachine::updateError() {
@@ -366,6 +370,10 @@ unsigned long StateMachine::getPhaseElapsedTime() const {
     if (currentState == STATE_PAUSED) {
         return pausedPhaseElapsedTime;
     }
+    // STATE_COMPLETED usa stateStartTime en lugar de phaseStartTime
+    if (currentState == STATE_COMPLETED) {
+        return millis() - stateStartTime;
+    }
     return millis() - phaseStartTime;
 }
 
@@ -404,6 +412,11 @@ unsigned long StateMachine::getPhaseRemainingTime() const {
             targetTime = Timing::COOLING_TIME_SEC * 1000UL;
             break;
 
+        case STATE_COMPLETED:
+            // Tiempo de pantalla de finalización
+            targetTime = Timing::COMPLETION_DISPLAY_SEC * 1000UL;
+            break;
+
         case STATE_FILLING:
         default:
             // Fase de llenado no tiene tiempo definido (depende del sensor)
@@ -423,7 +436,8 @@ bool StateMachine::isTimerActive() const {
            currentState == STATE_DRAINING ||
            currentState == STATE_SPINNING ||
            currentState == STATE_RESTING ||
-           currentState == STATE_COOLING;
+           currentState == STATE_COOLING ||
+           currentState == STATE_COMPLETED;
 }
 
 uint16_t StateMachine::getTotalProgramTime() const {

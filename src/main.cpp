@@ -523,8 +523,17 @@ void updateUI() {
                 break;
 
             case STATE_SELECTION:
+                // Si venimos desde COMPLETED, cargar programa por defecto
+                if (lastDisplayedState == STATE_COMPLETED) {
+                    if (!storage.loadProgram(22, stateMachine.getConfig())) {
+                        stateMachine.getConfig().setDefaults(PROGRAM_22);
+                    }
+                    updateProgramButtons(22);  // Resaltar botón P22
+                } else {
+                    updateProgramButtons(config.programNumber);  // Resaltar programa actual
+                }
+
                 nextion.showSelection();
-                updateProgramButtons(config.programNumber);  // Resaltar programa actual
                 nextion.updateSelectionDisplay(config);
                 // Serial.println("UI: Mostrando página de selección");
                 break;
@@ -544,18 +553,12 @@ void updateUI() {
                 break;
 
             case STATE_COMPLETED:
-                // Serial.println("UI: Programa completado");
+                // Serial.println("UI: Programa completado - mostrando pantalla de finalización");
                 sensors.stopMonitoring();  // DESACTIVAR sensores al completar
 
-                // Cargar programa por defecto (P22) desde storage
-                if (!storage.loadProgram(22, stateMachine.getConfig())) {
-                    stateMachine.getConfig().setDefaults(PROGRAM_22);
-                }
-                stateMachine.setState(STATE_SELECTION);
-
-                nextion.showSelection();
-                updateProgramButtons(22);  // Resaltar botón P22
-                nextion.updateSelectionDisplay(stateMachine.getConfig());
+                // Mantener la página de ejecución visible
+                // El estado COMPLETED esperará COMPLETION_DISPLAY_SEC antes de volver automáticamente
+                // updateCompleted() se encargará de la transición a selección
                 break;
 
             case STATE_ERROR:
@@ -582,9 +585,9 @@ void updateUI() {
 
     lastUIUpdate = now;
 
-    // Actualizar página de ejecución si estamos en proceso o pausado
+    // Actualizar página de ejecución si estamos en proceso, pausado o completado
     // Nota: STATE_RESTING está entre STATE_SPINNING y STATE_COOLING por el orden del enum
-    if ((state >= STATE_FILLING && state <= STATE_COOLING) || state == STATE_PAUSED) {
+    if ((state >= STATE_FILLING && state <= STATE_COOLING) || state == STATE_PAUSED || state == STATE_COMPLETED) {
         // Mostrar tiempo restante si está en fase de lavado o pausado, sino 0
         uint16_t phaseTime = (stateMachine.isTimerActive() || state == STATE_PAUSED)
             ? stateMachine.getPhaseRemainingTime() / 1000
