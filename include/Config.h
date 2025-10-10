@@ -87,6 +87,7 @@ namespace Timing
     constexpr uint16_t COOLING_TIME_SEC = 60;         // Tiempo de finalizacion
     constexpr uint16_t CENTRIFUGE_TIME_SEC = 180;      // Tiempo de centrifugado
     constexpr uint16_t REST_BETWEEN_PROCESS_SEC = 10; // Tiempo de reposo entre tandas (P24)
+    constexpr uint16_t COMPLETION_DISPLAY_SEC = 20;    // Tiempo mostrando pantalla de finalización antes de volver a selección
 
     constexpr uint16_t SENSOR_READ_INTERVAL_MS = 500; // Intervalo de lectura de sensores
     constexpr uint16_t UI_UPDATE_INTERVAL_MS = 1000;  // Intervalo de actualización de UI
